@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://chess/models/board/Material_004.material" type="Material" id=1]
+[ext_resource path="res://chess/models/board/wood.tres" type="Material" id=2]
+[ext_resource path="res://chess/models/board/tilewhite.tres" type="Material" id=3]
+[ext_resource path="res://chess/models/board/board.fbx" type="PackedScene" id=4]
+
+[node name="board" instance=ExtResource( 4 )]
+
+[node name="Plane2" parent="." index="0"]
+material/0 = ExtResource( 1 )
+material/1 = ExtResource( 3 )
+
+[node name="Cube2" parent="." index="1"]
+material/0 = ExtResource( 2 )
+
+[node name="Cube002" parent="." index="2"]
+material/0 = ExtResource( 2 )

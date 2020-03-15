@@ -1,0 +1,813 @@
+[gd_scene load_steps=16 format=2]
+
+[ext_resource path="res://chess/ChessDirector.gdns" type="Script" id=1]
+[ext_resource path="res://chess/Chess.gd" type="Script" id=2]
+[ext_resource path="res://chess/models/board/board.tscn" type="PackedScene" id=3]
+[ext_resource path="res://chess/BoardTile.tscn" type="PackedScene" id=4]
+[ext_resource path="res://gui/timer_font.tres" type="DynamicFont" id=5]
+[ext_resource path="res://chess/Pieces.gd" type="Script" id=6]
+[ext_resource path="res://gui/free_serif_normal.tres" type="DynamicFont" id=7]
+[ext_resource path="res://chess/GUI.gd" type="Script" id=8]
+[ext_resource path="res://gui/pawn_promotion_font.tres" type="DynamicFont" id=9]
+[ext_resource path="res://chess/PawnPromotionPopup.gd" type="Script" id=10]
+
+[sub_resource type="Animation" id=1]
+tracks/0/type = "bezier"
+tracks/0/path = NodePath(".:margin_top")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( -128, -0.25, 0, 0.63, -38.3856, -400, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+
+[sub_resource type="Animation" id=2]
+resource_name = "show"
+tracks/0/type = "bezier"
+tracks/0/path = NodePath(".:margin_top")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( -20, -0.25, 0, 0.67, 1, -235, -0.32, 13, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("CenterContainer/Button:text")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ "show options", "hide options" ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("CenterContainer/Button:flat")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OptionsPanel/VBoxContainer/AnimationToggle:disabled")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0.1, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("OptionsPanel/VBoxContainer/TimerToggle:disabled")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0.1, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("OptionsPanel/VBoxContainer/TimerContainer/Minutes:editable")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0.1, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath("OptionsPanel/VBoxContainer/TimerContainer/Seconds:editable")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"times": PoolRealArray( 0.1, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/7/type = "value"
+tracks/7/path = NodePath("CenterContainer/Button:self_modulate")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0.294118 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath("OptionsPanel/VBoxContainer/RankFileToggle:disabled")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"times": PoolRealArray( 0.1, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=3]
+resource_name = "move_entry_shake"
+tracks/0/type = "value"
+tracks/0/path = NodePath("ActionGrid/MoveEntry:rect_rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.4, 0.6, 0.8, 1 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 0.0, -30.0, 30.0, -30.0, 30.0, 0.0 ]
+}
+
+[sub_resource type="Environment" id=4]
+background_mode = 1
+background_color = Color( 0.184314, 0.0666667, 0.0666667, 1 )
+ambient_light_color = Color( 0.933333, 0.862745, 0.733333, 1 )
+ambient_light_energy = 0.24
+tonemap_white = 2.73
+ssao_quality = 0
+ssao_blur = 1
+
+[sub_resource type="BoxShape" id=5]
+extents = Vector3( 40, 0.1, 40 )
+
+[node name="Chess" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="ChessDirector" type="Node" parent="."]
+script = ExtResource( 1 )
+
+[node name="GUI" type="Node" parent="."]
+script = ExtResource( 8 )
+
+[node name="PawnPromotionPopup" type="PopupPanel" parent="GUI"]
+visible = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -186.0
+margin_top = -67.0
+margin_right = 186.0
+margin_bottom = 67.0
+popup_exclusive = true
+script = ExtResource( 10 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PawnOptionContainer" type="HBoxContainer" parent="GUI/PawnPromotionPopup"]
+margin_left = 4.0
+margin_top = 4.0
+margin_right = 368.0
+margin_bottom = 130.0
+alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Queen" type="Button" parent="GUI/PawnPromotionPopup/PawnOptionContainer"]
+margin_right = 88.0
+margin_bottom = 126.0
+custom_fonts/font = ExtResource( 9 )
+text = "♛"
+
+[node name="Rook" type="Button" parent="GUI/PawnPromotionPopup/PawnOptionContainer"]
+margin_left = 92.0
+margin_right = 180.0
+margin_bottom = 126.0
+custom_fonts/font = ExtResource( 9 )
+text = "♜"
+
+[node name="Bishop" type="Button" parent="GUI/PawnPromotionPopup/PawnOptionContainer"]
+margin_left = 184.0
+margin_right = 272.0
+margin_bottom = 126.0
+custom_fonts/font = ExtResource( 9 )
+text = "♝"
+
+[node name="Knight" type="Button" parent="GUI/PawnPromotionPopup/PawnOptionContainer"]
+margin_left = 276.0
+margin_right = 364.0
+margin_bottom = 126.0
+custom_fonts/font = ExtResource( 9 )
+text = "♞"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScorePanel" type="Panel" parent="GUI"]
+self_modulate = Color( 0, 0, 0, 0.666667 )
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -300.0
+margin_top = 40.0
+margin_right = -40.0
+margin_bottom = 141.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/ScorePanel"]
+margin_left = 13.0
+margin_top = 9.0
+margin_right = 246.0
+margin_bottom = 91.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScoreLabel" type="Label" parent="GUI/ScorePanel/MarginContainer"]
+margin_right = 233.0
+margin_bottom = 81.0
+custom_fonts/font = ExtResource( 7 )
+text = "White Score: 0
+♙♙♙♙♙♙♙♙♙♙♙♙♙♙♙♙
+Black Score: 0
+♙♙♙♙♙♙♙♙♙♙♙♙♙♙♙♙"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LogPanel" type="Panel" parent="GUI"]
+self_modulate = Color( 0, 0, 0, 0.666667 )
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -294.0
+margin_top = -128.0
+margin_right = -40.0
+margin_bottom = -78.0
+rect_clip_content = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/LogPanel"]
+margin_left = 16.0
+margin_top = 15.0
+margin_right = 240.0
+margin_bottom = 307.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VSplitContainer" type="VSplitContainer" parent="GUI/LogPanel/MarginContainer"]
+margin_right = 224.0
+margin_bottom = 292.0
+split_offset = 4
+dragger_visibility = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HSplitContainer" type="HSplitContainer" parent="GUI/LogPanel/MarginContainer/VSplitContainer"]
+margin_right = 224.0
+margin_bottom = 24.0
+split_offset = 90
+dragger_visibility = 2
+
+[node name="GameLogLabel" type="Label" parent="GUI/LogPanel/MarginContainer/VSplitContainer/HSplitContainer"]
+margin_top = 5.0
+margin_right = 154.0
+margin_bottom = 19.0
+text = "Game Log"
+
+[node name="ShowLogButton" type="Button" parent="GUI/LogPanel/MarginContainer/VSplitContainer/HSplitContainer"]
+margin_left = 154.0
+margin_right = 224.0
+margin_bottom = 24.0
+focus_neighbour_bottom = NodePath("../../../../../ActionGrid/MoveEntry")
+focus_next = NodePath("../../../../../ActionGrid/MoveEntry")
+shortcut_in_tooltip = false
+text = "show"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Log" type="RichTextLabel" parent="GUI/LogPanel/MarginContainer/VSplitContainer"]
+margin_top = 36.0
+margin_right = 224.0
+margin_bottom = 292.0
+custom_fonts/normal_font = ExtResource( 7 )
+scroll_following = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ActionGrid" type="GridContainer" parent="GUI"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -344.0
+margin_top = -64.0
+margin_right = -40.0
+margin_bottom = -40.0
+columns = 5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="GUI/ActionGrid"]
+margin_top = 5.0
+margin_right = 47.0
+margin_bottom = 19.0
+text = "Move:  "
+
+[node name="MoveEntry" type="LineEdit" parent="GUI/ActionGrid"]
+margin_left = 51.0
+margin_right = 109.0
+margin_bottom = 24.0
+rect_pivot_offset = Vector2( 30, 12 )
+focus_neighbour_top = NodePath("../../LogPanel/MarginContainer/VSplitContainer/HSplitContainer/ShowLogButton")
+focus_next = NodePath("../SubmitButton")
+max_length = 5
+context_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+placeholder_text = "\"a1 a2\""
+placeholder_alpha = 0.299
+caret_blink = true
+
+[node name="SubmitButton" type="Button" parent="GUI/ActionGrid"]
+margin_left = 113.0
+margin_right = 170.0
+margin_bottom = 24.0
+focus_neighbour_left = NodePath("../MoveEntry")
+focus_neighbour_top = NodePath("../../LogPanel/MarginContainer/VSplitContainer/HSplitContainer/ShowLogButton")
+focus_neighbour_right = NodePath("../ResignButton")
+focus_next = NodePath("../ResignButton")
+focus_previous = NodePath("../MoveEntry")
+text = "submit"
+
+[node name="ResignButton" type="Button" parent="GUI/ActionGrid"]
+margin_left = 174.0
+margin_right = 225.0
+margin_bottom = 24.0
+text = "resign"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DrawButton" type="Button" parent="GUI/ActionGrid"]
+margin_left = 229.0
+margin_right = 304.0
+margin_bottom = 24.0
+text = "offer draw"
+
+[node name="OptionsContainer" type="VBoxContainer" parent="GUI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 40.0
+margin_top = -20.0
+margin_right = 292.0
+margin_bottom = 130.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CenterContainer" type="CenterContainer" parent="GUI/OptionsContainer"]
+margin_right = 252.0
+margin_bottom = 20.0
+
+[node name="Button" type="Button" parent="GUI/OptionsContainer/CenterContainer"]
+self_modulate = Color( 1, 1, 1, 0.294118 )
+margin_left = 77.0
+margin_right = 174.0
+margin_bottom = 20.0
+text = "show options"
+flat = true
+
+[node name="OptionsPanel" type="PanelContainer" parent="GUI/OptionsContainer"]
+margin_top = 24.0
+margin_right = 252.0
+margin_bottom = 194.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/OptionsContainer/OptionsPanel"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 245.0
+margin_bottom = 163.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RankFileToggle" type="CheckButton" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer"]
+margin_right = 238.0
+margin_bottom = 40.0
+text = "Rank/File Indicators:"
+
+[node name="AnimationToggle" type="CheckButton" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer"]
+margin_top = 44.0
+margin_right = 238.0
+margin_bottom = 84.0
+pressed = true
+text = "Board Animations:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TimerToggle" type="CheckButton" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer"]
+margin_top = 88.0
+margin_right = 238.0
+margin_bottom = 128.0
+text = "Turn Timer:"
+
+[node name="TimerContainer" type="HBoxContainer" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer"]
+margin_top = 132.0
+margin_right = 238.0
+margin_bottom = 156.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer/TimerContainer"]
+margin_top = 5.0
+margin_right = 82.0
+margin_bottom = 19.0
+text = "  Time limit: "
+
+[node name="Minutes" type="SpinBox" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer/TimerContainer"]
+margin_left = 86.0
+margin_right = 160.0
+margin_bottom = 24.0
+max_value = 60.0
+align = 2
+suffix = ":"
+
+[node name="Seconds" type="SpinBox" parent="GUI/OptionsContainer/OptionsPanel/VBoxContainer/TimerContainer"]
+margin_left = 164.0
+margin_right = 238.0
+margin_bottom = 24.0
+max_value = 59.0
+
+[node name="TimerContainer" type="HSplitContainer" parent="GUI"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -226.719
+margin_top = 164.77
+margin_right = -118.719
+margin_bottom = 204.77
+split_offset = 20
+dragger_visibility = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="WhiteTime" type="Label" parent="GUI/TimerContainer"]
+margin_top = 5.0
+margin_right = 53.0
+margin_bottom = 35.0
+custom_fonts/font = ExtResource( 5 )
+text = "3:02"
+
+[node name="BlackTime" type="Label" parent="GUI/TimerContainer"]
+margin_left = 65.0
+margin_top = 5.0
+margin_right = 108.0
+margin_bottom = 35.0
+custom_fonts/font = ExtResource( 5 )
+text = "3:02"
+
+[node name="LogPanelAnimator" type="AnimationPlayer" parent="GUI"]
+root_node = NodePath("../LogPanel")
+anims/show = SubResource( 1 )
+
+[node name="OptionsContainerAnimator" type="AnimationPlayer" parent="GUI"]
+root_node = NodePath("../OptionsContainer")
+anims/show = SubResource( 2 )
+
+[node name="MoveEntryAnimator" type="AnimationPlayer" parent="GUI"]
+playback_speed = 3.0
+anims/move_entry_shake = SubResource( 3 )
+
+[node name="Pieces" type="Node" parent="."]
+script = ExtResource( 6 )
+
+[node name="Tiles" type="Node" parent="."]
+
+[node name="0,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, -4.2 )
+tile = PoolIntArray( 0, 7 )
+
+[node name="0,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, -3.15 )
+tile = PoolIntArray( 0, 6 )
+
+[node name="0,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, -2.1 )
+tile = PoolIntArray( 0, 5 )
+
+[node name="0,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, -1.05 )
+tile = PoolIntArray( 0, 4 )
+
+[node name="0,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, 0 )
+tile = PoolIntArray( 0, 3 )
+
+[node name="0,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, 1.05 )
+tile = PoolIntArray( 0, 2 )
+
+[node name="0,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, 2.1 )
+tile = PoolIntArray( 0, 1 )
+
+[node name="0,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.546862, 3.15 )
+
+[node name="1,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, -4.2 )
+tile = PoolIntArray( 1, 7 )
+
+[node name="1,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, -3.15 )
+tile = PoolIntArray( 1, 6 )
+
+[node name="1,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, -2.1 )
+tile = PoolIntArray( 1, 5 )
+
+[node name="1,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, -1.05 )
+tile = PoolIntArray( 1, 4 )
+
+[node name="1,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, 0 )
+tile = PoolIntArray( 1, 3 )
+
+[node name="1,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, 1.05 )
+tile = PoolIntArray( 1, 2 )
+
+[node name="1,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, 2.1 )
+tile = PoolIntArray( 1, 1 )
+
+[node name="1,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 0.546862, 3.15 )
+tile = PoolIntArray( 1, 0 )
+
+[node name="2,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, -4.2 )
+tile = PoolIntArray( 2, 7 )
+
+[node name="2,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, -3.15 )
+tile = PoolIntArray( 2, 6 )
+
+[node name="2,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, -2.1 )
+tile = PoolIntArray( 2, 5 )
+
+[node name="2,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, -1.05 )
+tile = PoolIntArray( 2, 4 )
+
+[node name="2,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, 0 )
+tile = PoolIntArray( 2, 3 )
+
+[node name="2,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, 1.05 )
+tile = PoolIntArray( 2, 2 )
+
+[node name="2,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, 2.1 )
+tile = PoolIntArray( 2, 1 )
+
+[node name="2,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.546862, 3.15 )
+tile = PoolIntArray( 2, 0 )
+
+[node name="3,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, -4.2 )
+tile = PoolIntArray( 3, 7 )
+
+[node name="3,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, -3.15 )
+tile = PoolIntArray( 3, 6 )
+
+[node name="3,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, -2.1 )
+tile = PoolIntArray( 3, 5 )
+
+[node name="3,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, -1.05 )
+tile = PoolIntArray( 3, 4 )
+
+[node name="3,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, 0 )
+tile = PoolIntArray( 3, 3 )
+
+[node name="3,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, 1.05 )
+tile = PoolIntArray( 3, 2 )
+
+[node name="3,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, 2.1 )
+tile = PoolIntArray( 3, 1 )
+
+[node name="3,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.546862, 3.15 )
+tile = PoolIntArray( 3, 0 )
+
+[node name="4,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, -4.2 )
+tile = PoolIntArray( 4, 7 )
+
+[node name="4,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, -3.15 )
+tile = PoolIntArray( 4, 6 )
+
+[node name="4,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, -2.1 )
+tile = PoolIntArray( 4, 5 )
+
+[node name="4,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, -1.05 )
+tile = PoolIntArray( 4, 4 )
+
+[node name="4,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, 0 )
+tile = PoolIntArray( 4, 3 )
+
+[node name="4,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, 1.05 )
+tile = PoolIntArray( 4, 2 )
+
+[node name="4,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, 2.1 )
+tile = PoolIntArray( 4, 1 )
+
+[node name="4,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.546862, 3.15 )
+tile = PoolIntArray( 4, 0 )
+
+[node name="5,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, -4.2 )
+tile = PoolIntArray( 5, 7 )
+
+[node name="5,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, -3.15 )
+tile = PoolIntArray( 5, 6 )
+
+[node name="5,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, -2.1 )
+tile = PoolIntArray( 5, 5 )
+
+[node name="5,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, -1.05 )
+tile = PoolIntArray( 5, 4 )
+
+[node name="5,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, 0 )
+tile = PoolIntArray( 5, 3 )
+
+[node name="5,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, 1.05 )
+tile = PoolIntArray( 5, 2 )
+
+[node name="5,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, 2.1 )
+tile = PoolIntArray( 5, 1 )
+
+[node name="5,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.546862, 3.15 )
+tile = PoolIntArray( 5, 0 )
+
+[node name="6,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, -4.2 )
+tile = PoolIntArray( 6, 7 )
+
+[node name="6,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, -3.15 )
+tile = PoolIntArray( 6, 6 )
+
+[node name="6,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, -2.1 )
+tile = PoolIntArray( 6, 5 )
+
+[node name="6,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, -1.05 )
+tile = PoolIntArray( 6, 4 )
+
+[node name="6,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, 0 )
+tile = PoolIntArray( 6, 3 )
+
+[node name="6,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, 1.05 )
+tile = PoolIntArray( 6, 2 )
+
+[node name="6,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, 2.1 )
+tile = PoolIntArray( 6, 1 )
+
+[node name="6,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.546862, 3.15 )
+tile = PoolIntArray( 6, 0 )
+
+[node name="7,7" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, -4.2 )
+tile = PoolIntArray( 7, 7 )
+
+[node name="7,6" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, -3.15 )
+tile = PoolIntArray( 7, 6 )
+
+[node name="7,5" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, -2.1 )
+tile = PoolIntArray( 7, 5 )
+
+[node name="7,4" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, -1.05 )
+tile = PoolIntArray( 7, 4 )
+
+[node name="7,3" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, 0 )
+tile = PoolIntArray( 7, 3 )
+
+[node name="7,2" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, 1.05 )
+tile = PoolIntArray( 7, 2 )
+
+[node name="7,1" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, 2.1 )
+tile = PoolIntArray( 7, 1 )
+
+[node name="7,0" parent="Tiles" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.546862, 3.15 )
+tile = PoolIntArray( 7, 0 )
+
+[node name="CameraArm" type="SpringArm" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.571659, 0.820491, 0, -0.820491, 0.571659, 0, 0, 0 )
+collision_mask = 2
+spring_length = 13.0
+
+[node name="Camera" type="Camera" parent="CameraArm"]
+environment = SubResource( 4 )
+
+[node name="CameraRay" type="RayCast" parent="."]
+collision_mask = 2
+collide_with_areas = true
+collide_with_bodies = false
+
+[node name="BoardSurface" type="Area" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.690446, 0 )
+visible = false
+collision_layer = 2
+collision_mask = 0
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="CollisionShape" type="CollisionShape" parent="BoardSurface"]
+shape = SubResource( 5 )
+
+[node name="ChessBoardModel" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.62795, 0 )
+
+[node name="Lighting" type="Node" parent="."]
+
+[node name="DirectionalLight" type="DirectionalLight" parent="Lighting"]
+transform = Transform( -0.247367, -0.648188, 0.720182, -0.361215, 0.751392, 0.552208, -0.899073, -0.123543, -0.420005, 4.81089, 5.25642, -3.01769 )
+light_color = Color( 1, 0.929412, 0.792157, 1 )
+light_energy = 2.68
+light_indirect_energy = 6.29
+
+[node name="OmniLight" type="OmniLight" parent="Lighting"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.01311, 0.381658, 2.20784 )
+omni_range = 6.67258

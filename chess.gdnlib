@@ -1,0 +1,18 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=true
+
+[entry]
+
+OSX.64="res://target/debug/libChess.dylib"
+X11.64="res://target/debug/libChess.so"
+Windows.64="res://target/debug/libphys.dll"
+
+[dependencies]
+
+OSX.64=[  ]
+X11.64=[  ]
+Windows.64=[  ]
