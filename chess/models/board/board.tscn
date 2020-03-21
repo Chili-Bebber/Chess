@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://chess/models/board/Material_004.material" type="Material" id=1]
 [ext_resource path="res://chess/models/board/wood.tres" type="Material" id=2]
 [ext_resource path="res://chess/models/board/tilewhite.tres" type="Material" id=3]
 [ext_resource path="res://chess/models/board/board.fbx" type="PackedScene" id=4]
+[ext_resource path="res://chess/models/board/fake_shadow.png" type="Texture" id=5]
 
 [node name="board" instance=ExtResource( 4 )]
 
@@ -16,3 +17,7 @@ material/0 = ExtResource( 2 )
 
 [node name="Cube002" parent="." index="2"]
 material/0 = ExtResource( 2 )
+
+[node name="Sprite3D" type="Sprite3D" parent="." index="3"]
+transform = Transform( 4, 0, 0, 0, -1.74846e-07, -1, 0, 4, -4.37114e-08, -0.104121, 1.34299, -0.190934 )
+texture = ExtResource( 5 )

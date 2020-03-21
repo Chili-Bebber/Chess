@@ -58,7 +58,7 @@ func _move_tried(move_was_legal: bool):
         is_white_turn = not is_white_turn
         signal_queue[0].append("move")
         signal_queue[1].append(Vector2())
-    elif held_piece and held_piece.is_moving:
+    elif held_piece and (held_piece.is_moving || not animation_enabled):
         signal_queue[0].append("move")
         signal_queue[1].append(Vector2(-1, -1))    
     resolve_queue()
@@ -102,9 +102,9 @@ func capture_piece(position: Vector2):
         .get_piece()
     if captured_piece:
         if held_piece.is_moving and captured_piece.get_tile().get_pos() == move_dest:
-            held_piece.move(move_dest+Vector3(1.8, 3, 0), 0.6, 2.0, false)
+            held_piece.move(move_dest+Vector3(1.4, 3, 0), 1, 2.0, false)
             var capture_timer = Timer.new()
-            capture_timer.set_wait_time(0.5)
+            capture_timer.set_wait_time(0.4)
             capture_timer.set_one_shot(true)
             self.add_child(capture_timer)
             capture_timer.start()
@@ -136,12 +136,14 @@ func promote_pawn(position: Vector2):
     mouse_input.suspend_input()
     $GUI.set_actions_enabled(false)
     
+    yield(held_piece, "moved_internal")
     pawn_promotion_popup.popup()
     # wait for signal from pawn promotion popup
     var new_piece_type = yield(pawn_promotion_popup, "piece_type_selected")
     pawn_promotion_popup.hide()
     
     held_piece.promote(new_piece_type)
+    yield(held_piece, "moved")
     
     mouse_input.resume_input()
     $GUI.set_actions_enabled(true)
@@ -213,12 +215,12 @@ func _input(event):
                     point.z = -BOARD_WIDTH
             var drag_position = point + Vector3(0, 2, 0)
             drag_point = drag_position
-    elif event is InputEventMouseButton:
-        var arm_length = $CameraArm.get_length()
-        if Input.is_action_pressed("scroll_up") and arm_length > 5.0:
-            $CameraArm.set_length(arm_length - 0.5)
-        elif Input.is_action_pressed("scroll_down") and arm_length < 20.0:
-            $CameraArm.set_length(arm_length + 0.5)
+#	elif event is InputEventMouseButton:
+#		var arm_length = $CameraArm.get_length()
+#		if Input.is_action_pressed("scroll_up") and arm_length > 5.0:
+#			$CameraArm.set_length(arm_length - 0.5)
+#		elif Input.is_action_pressed("scroll_down") and arm_length < 20.0:
+#			$CameraArm.set_length(arm_length + 0.5)
     
 func get_tile(pos: PoolIntArray) -> Node:
     var node_path = "Tiles/%s,%s"

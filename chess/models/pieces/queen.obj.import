@@ -1,0 +1,19 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/queen.obj-d192b11c7784a989acc9f2389b5636d3.mesh"
+
+[deps]
+
+files=[ "res://.import/queen.obj-d192b11c7784a989acc9f2389b5636d3.mesh" ]
+
+source_file="res://chess/models/pieces/queen.obj"
+dest_files=[ "res://.import/queen.obj-d192b11c7784a989acc9f2389b5636d3.mesh", "res://.import/queen.obj-d192b11c7784a989acc9f2389b5636d3.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
+offset_mesh=Vector3( 0, 0, 0 )
+optimize_mesh=true

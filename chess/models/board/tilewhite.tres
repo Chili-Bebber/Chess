@@ -4,3 +4,7 @@
 resource_name = "Material.003"
 params_cull_mode = 2
 roughness = 0.0764706
+ao_enabled = true
+ao_light_affect = 0.0
+ao_on_uv2 = false
+ao_texture_channel = 0

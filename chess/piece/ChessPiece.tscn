@@ -1,15 +1,13 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://chess/piece/ChessPiece.gd" type="Script" id=1]
+[ext_resource path="res://chess/piece/shadow.png" type="Texture" id=2]
 
 [sub_resource type="Curve" id=1]
-_data = [ Vector2( 0, 0 ), 0.0, -0.140347, 0, 0, Vector2( 0.388646, 0.636364 ), 0.916, 0.916, 0, 0, Vector2( 1, 1 ), 0.0, 0.0, 0, 0 ]
+_data = [ Vector2( 0, 0 ), 0.0, -0.141818, 0, 0, Vector2( 0.340659, 0.109091 ), 0.778609, 0.778609, 0, 0, Vector2( 0.675824, 0.9 ), 1.01111, 1.01111, 0, 0, Vector2( 1, 1 ), 0.435407, 0.0, 0, 0 ]
 
-[sub_resource type="CylinderShape" id=2]
-radius = 0.488633
-height = 1.60986
-
-[sub_resource type="CylinderMesh" id=3]
+[sub_resource type="BoxShape" id=2]
+extents = Vector3( 0.3, 0.635, 0.3 )
 
 [node name="ChessPiece" type="RigidBody"]
 mode = 1
@@ -17,13 +15,11 @@ script = ExtResource( 1 )
 interp_curve = SubResource( 1 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.865363, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.625511, 0 )
 shape = SubResource( 2 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
-transform = Transform( 0.5, 0, 0, 0, 0.8, 0, 0, 0, 0.5, 0, 0.865363, 0 )
-mesh = SubResource( 3 )
-material/0 = null
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.073084, 0 )
 
 [node name="RemoteTransform" type="RemoteTransform" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.900607, 0 )
@@ -32,6 +28,10 @@ update_rotation = false
 update_scale = false
 
 [node name="trans" type="Node" parent="."]
+
+[node name="shadow" type="Sprite3D" parent="trans"]
+transform = Transform( 0.26, 0, 0, 0, -1.1365e-08, -1, 0, 0.26, -4.37114e-08, 0, 0.0987791, 0 )
+texture = ExtResource( 2 )
 
 [node name="RayCast" type="RayCast" parent="trans"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.900607, 0 )

@@ -1,5 +1,10 @@
 use crate::{chesspiece::*, game::*};
 use std::{fmt, rc::Rc, io::{self, Stdin}};
+use godot::{
+    init::{PropertyHint, PropertyUsage, SignalArgument, Signal, ClassBuilder},
+    user_data::MutexData,
+    Node, Int32Array, Variant, GodotString, Vector2
+};
 
 // ChessBoard struct
 pub struct ChessBoard {
@@ -19,6 +24,85 @@ pub struct ChessBoard {
     white_king_pos: [usize; 2],
     black_king_pos: [usize; 2],
 }
+
+unsafe impl Send for ChessBoard {}
+
+impl godot::NativeClass for ChessBoard {
+    type Base = Node;
+    type UserData = MutexData<ChessBoard>;
+    fn class_name() -> &'static str {
+        "ChessBoard"
+    }
+    fn init(owner: Self::Base) -> Self {
+        Self::new()
+    }
+    fn register_properties(builder: &ClassBuilder<Self>) {
+        builder.add_signal(Signal {
+            name: "game_over",
+            args: &[SignalArgument {
+                name: "winner",
+                default: Variant::from_i64(0),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "log_update",
+            args: &[SignalArgument {
+                name: "entry",
+                default: Variant::from_str(""),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "score_update",
+            args: &[SignalArgument {
+                name: "score",
+                default: Variant::from_str(""),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "move_is_legal",
+            args: &[SignalArgument {
+                name: "is_legal",
+                default: Variant::from_bool(false),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "piece_captured",
+            args: &[SignalArgument {
+                name: "position",
+                default: Variant::from_vector2(&Vector2::zero()),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "castle",
+            args: &[SignalArgument {
+                name: "position",
+                default: Variant::from_vector2(&Vector2::zero()),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        builder.add_signal(Signal {
+            name: "pawn_promoted",
+            args: &[SignalArgument {
+                name: "position",
+                default: Variant::from_vector2(&Vector2::zero()),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+    }
+}
+
 // make ChessBoard a game
 impl Game for ChessBoard {
     fn get_player(&self) -> bool {
@@ -44,115 +128,135 @@ impl Game for ChessBoard {
         self.white_king_pos = [4, 0];
         self.black_king_pos = [4, 7];
     }
-    // called from game_loop. Represents the course of a turn
-    fn take_turn(&mut self) -> bool {
+    // called from game_loop. Represents the course of a turn NOT ANYMORE HAAAHAHAHAHHAAAA
+    unsafe fn take_turn(&mut self, mut owner: Node, start: [usize; 2], dest: [usize;2]) -> bool {
         if self.test_stalemate(self.player) {
             if self.test_checkmate(self.player) { 
                 if self.player {
-                    self.winner = Some(-1);
+                    owner.emit_signal(
+                        GodotString::from_str("game_over"),
+                        &[Variant::from_i64(-1)]);
                 } else {
-                    self.winner = Some(1);
+                    owner.emit_signal(
+                        GodotString::from_str("game_over"),
+                        &[Variant::from_i64(-1)]);
                 }
             } else {
-                self.winner = Some(0)
+                owner.emit_signal(
+                    GodotString::from_str("game_over"),
+                    &[Variant::from_i64(0)]);
             }
             return false;
         }
-        if self.player {
-            print!("\n♔ move: ");
-        } else {
-            print!("\n♚ move: ");
-        }
-        println!("eg. \"a1 a2\" or resign");
-        if let Some((start, dest)) = self.parse_input() {
-            if let Some(piece) = (self.board[start[0]][start[1]]).clone() {
-                if !self.test_check(start, dest, self.player)
-                && piece.is_white() == self.player {
-                    if piece.test_move(start, dest, self) {
-                        // if piece is a pawn
-                        if piece.get_piece_type() == &PieceType::Pawn {
-                            if self.player {
-                                if let Some(space) = self.black_en_passant {
-                                    self.capture([dest[0], dest[1]-1]);
-                                } else if dest[1]-start[1] == 2 {
-                                    self.white_en_passant =
-                                        Some([dest[0], dest[1]-1]);
-                                } else {
-                                    self.capture(dest);
-                                }
+        if let Some(piece) = (self.board[start[0]][start[1]]).clone() {
+            let mut pawn_promoted = false;
+            if !self.test_check(start, dest, self.player)
+            && piece.is_white() == self.player {
+                if piece.test_move(start, dest, self) {
+                    owner.emit_signal(
+                        GodotString::from_str("log_update"),
+                        &[Variant::from_str(&format!("{} {}{} → {}{}", 
+                                                       piece, 
+                                                       (start[0]+97) as u8 as char, 
+                                                       start[1]+1, 
+                                                       (dest[0]+97) as u8 as char, 
+                                                       dest[1]+1))]);
+                    // if piece is a pawn
+                    if piece.get_piece_type() == &PieceType::Pawn {
+                        if self.player {
+                            if self.black_en_passant.is_some() && dest == self.black_en_passant.unwrap() {
+                                self.capture(owner, [dest[0], dest[1]-1]);
+                            } else if dest[1]-start[1] == 2 {
+                                self.white_en_passant = Some([dest[0], dest[1]-1]);
                             } else {
-                                if let Some(space) = self.white_en_passant {
-                                    self.capture([dest[0], dest[1]+1]);
-                                } else if start[1]-dest[1] == 2 {
-                                    self.black_en_passant = 
-                                        Some([dest[0], dest[1]+1]);
-                                } else {
-                                    self.capture(dest);
-                                }
+                                self.capture(owner, dest);
                             }
                         } else {
-                            // If piece is a king
-                            if piece.get_piece_type() == &PieceType::King {
-                                if dest[0] == 2 {
-                                    if self.player && self.white_can_castle_left {
-                                        self.board[0][0] = None;
-                                        self.board[3][0] = Some(Rc::new(Rook::new(true)));
-                                    } else if !self.player && self.black_can_castle_left {
-                                        self.board[0][7] = None;
-                                        self.board[3][7] = Some(Rc::new(Rook::new(false)));
-                                    }
-                                } else if dest[0] == 6 {
-                                    if self.player && self.white_can_castle_right {
-                                        self.board[7][0] = None;
-                                        self.board[5][0] = Some(Rc::new(Rook::new(true)));
-                                    } else if !self.player && self.black_can_castle_right {
-                                        self.board[7][7] = None;
-                                        self.board[5][7] = Some(Rc::new(Rook::new(false)));
-                                    }
+                            if self.white_en_passant.is_some() && dest == self.white_en_passant.unwrap() {
+                                self.capture(owner, [dest[0], dest[1]+1]);
+                            } else if start[1]-dest[1] == 2 {
+                                self.black_en_passant = Some([dest[0], dest[1]+1]);
+                            } else {
+                                self.capture(owner, dest);
+                            }
+                        }
+                    } else {
+                        // If piece is a king
+                        if piece.get_piece_type() == &PieceType::King {
+                            if dest[0] == 2 {
+                                if self.player && self.white_can_castle_left {
+                                    owner.emit_signal(
+                                        GodotString::from_str("castle"),
+                                        &[Variant::from_vector2(&Vector2::new(0.0, 0.0))]);
+                                    self.board[0][0] = None;
+                                    self.board[3][0] = Some(Rc::new(Rook::new(true)));
+                                } else if !self.player && self.black_can_castle_left {
+                                    owner.emit_signal(
+                                        GodotString::from_str("castle"),
+                                        &[Variant::from_vector2(&Vector2::new(0.0, 7.0))]);
+                                    self.board[0][7] = None;
+                                    self.board[3][7] = Some(Rc::new(Rook::new(false)));
                                 }
-                                if self.player {
-                                    self.white_king_pos = dest;
+                            } else if dest[0] == 6 {
+                                if self.player && self.white_can_castle_right {
+                                    owner.emit_signal(
+                                        GodotString::from_str("castle"),
+                                        &[Variant::from_vector2(&Vector2::new(7.0, 0.0))]);
+                                    self.board[7][0] = None;
+                                    self.board[5][0] = Some(Rc::new(Rook::new(true)));
+                                } else if !self.player && self.black_can_castle_right {
+                                    owner.emit_signal(
+                                        GodotString::from_str("castle"),
+                                        &[Variant::from_vector2(&Vector2::new(7.0, 7.0))]);
+                                    self.board[7][7] = None;
+                                    self.board[5][7] = Some(Rc::new(Rook::new(false)));
+                                }
+                            }
+                            if self.player {
+                                self.white_king_pos = dest;
+                                self.white_can_castle_left = false;                     
+                                self.white_can_castle_right = false;
+                            } else {
+                                self.black_king_pos = dest;
+                                self.black_can_castle_left = false;
+                                self.black_can_castle_right = false;
+                            }
+                        // if piece is a rook
+                        } else if piece.get_piece_type() == &PieceType::Rook {
+                            if start[0] == 0 {
+                                if self.player && self.white_can_castle_left {
                                     self.white_can_castle_left = false;
-                                    self.white_can_castle_right = false;
-                                } else {
-                                    self.black_king_pos = dest;
+                                } else if !self.player && self.black_can_castle_left {
                                     self.black_can_castle_left = false;
+                                }
+                            } else if start[0] == 7 {
+                                if self.player && self.white_can_castle_right {
+                                    self.white_can_castle_right = false;
+                                } else if !self.player && self.black_can_castle_right {
                                     self.black_can_castle_right = false;
                                 }
-                            // if peice is a rook
-                            } else if piece.get_piece_type() == &PieceType::Rook {
-                                if start[0] == 0 {
-                                    if self.player && self.white_can_castle_left {
-                                        self.white_can_castle_left = false;
-                                    } else if !self.player && self.black_can_castle_left {
-                                        self.black_can_castle_left = false;
-                                    }
-                                } else if start[0] == 7 {
-                                    if self.player && self.white_can_castle_right {
-                                        self.white_can_castle_right = false;
-                                    } else if !self.player && self.black_can_castle_right {
-                                        self.black_can_castle_right = false;
-                                    }
-                                }
-                            }
-                            self.capture(dest);
-                        }
-                        self.board[dest[0]][dest[1]] = Some(piece.clone());
-                        self.board[start[0]][start[1]] = None;
-                        if piece.get_piece_type() == &PieceType::Pawn {
-                            if piece.is_white() && dest[1] == 7 {
-                                self.upgrade_pawn(dest, true);
-                            } else if dest[1] == 0 {
-                                self.upgrade_pawn(dest, false);
                             }
                         }
-                        if self.player && self.black_en_passant.is_some() {
-                            self.black_en_passant = None;
-                        } else if !self.player && self.white_en_passant.is_some() {
-                            self.white_en_passant = None;
-                        }
-                        return true;
+                        self.capture(owner, dest);
                     }
+                    self.board[dest[0]][dest[1]] = Some(piece.clone());
+                    self.board[start[0]][start[1]] = None;
+                    if piece.get_piece_type() == &PieceType::Pawn 
+                    && (dest[1] == 0 || dest[1] == 7) {
+                        pawn_promoted = true;
+                        self.upgrade_pawn_signal(owner, dest);
+                    }
+                    if self.player && self.black_en_passant.is_some() {
+                        self.black_en_passant = None;
+                    } else if !self.player && self.white_en_passant.is_some() {
+                        self.white_en_passant = None;
+                    }
+                    if !pawn_promoted {
+                        owner.emit_signal(
+                            GodotString::from_str("log_update"),
+                            &[Variant::from_str("\n")]);
+                    }
+                    return true;
                 }
             }
         }
@@ -164,7 +268,7 @@ impl Game for ChessBoard {
         println!("{}", self);
     }
     fn get_score(&self) -> String {
-        format!("white score: {} \n{}\nblack score: {}\n{}", 
+        format!("White Score: {} \n{}\nBlack Score: {}\n{}", 
                 self.score[0], self.white_captured,
                 self.score[1], self.black_captured)
     }
@@ -203,7 +307,19 @@ impl fmt::Display for ChessBoard {
         write!(f, "{}[0;m   a  b  c  d  e  f  g  h", 27 as char)
     }
 }
+#[methods]
 impl ChessBoard {
+    #[export]
+    unsafe fn try_move(&mut self, owner: Node, start: Int32Array, dest: Int32Array) {
+        let start = [start.get(0) as usize, start.get(1) as usize];
+        let dest = [dest.get(0) as usize, dest.get(1) as usize];
+        owner.clone().emit_signal(
+            GodotString::from_str("move_is_legal"),
+            &[Variant::from_bool(self.next_turn(owner, start, dest))]);
+    }
+    unsafe fn _init(owner: Node) -> Self {
+        Self::new()
+    }
     // constructor
     pub fn new() -> Self {
         ChessBoard {
@@ -299,7 +415,7 @@ impl ChessBoard {
         false
     }
     // capture a piece (remove it from board and increment score)
-    pub fn capture(&mut self, space: [usize; 2]) {
+    pub unsafe fn capture(&mut self, mut owner: Node, space: [usize; 2]) {
         if let Some(piece) = &self.board[space[0]][space[1]] {
             if piece.is_white() {
                 self.score[1] += piece.get_points();
@@ -308,7 +424,16 @@ impl ChessBoard {
                 self.score[0] += piece.get_points();
                 self.white_captured.push_str(piece.as_str());
             }
+            owner.emit_signal(
+                GodotString::from_str("piece_captured"),
+                &[Variant::from_vector2(&Vector2::new(space[0] as f32, space[1] as f32))]);
+            owner.emit_signal(
+                GodotString::from_str("log_update"),
+                &[Variant::from_str(&format!(" captures {}", piece))]);
             self.board[space[0]][space[1]] = None;
+            owner.emit_signal(
+                GodotString::from_str("score_update"),
+                &[Variant::from_str(self.get_score())]);
         }
     }
     // check if a square is threatened
@@ -387,41 +512,41 @@ impl ChessBoard {
     pub fn set(&mut self, pos: [usize; 2], piece: Option<Rc<dyn ChessPiece>>) {
         self.board[pos[0]][pos[1]] = piece;
     }
-    // turn a pawn into a different piece (or don't)
-    pub fn upgrade_pawn(&mut self, dest: [usize; 2], is_white: bool) {
-        loop {
-            let mut input_string = String::new();
-            self.print_game();
-            if is_white {
-                println!("\n1:♕ 2:♖ 3:♗ 4:♘");
-            } else {
-                println!("\n1:♛ 2:♜ 3:♝ 4:♞");
-            }
-            self.input.read_line(&mut input_string);
-            match input_string.trim() {
-                "1" => {
-                    self.board[dest[0]][dest[1]] = 
-                        Some(Rc::new(Queen::new(is_white)));
-                    return;
-                },
-                "2" => {
-                    self.board[dest[0]][dest[1]] =
-                        Some(Rc::new(Rook::new(is_white)));
-                    return;
-                },
-                "3" => {
-                    self.board[dest[0]][dest[1]] =
-                        Some(Rc::new(Bishop::new(is_white)));
-                    return;
-                },
-                "4" => {
-                    self.board[dest[0]][dest[1]] =
-                        Some(Rc::new(Knight::new(is_white)));
-                    return;
-                },
-                _ => {},
-            }
+    pub unsafe fn upgrade_pawn_signal(&self, mut owner: Node, space: [usize; 2]) {
+        owner.emit_signal(
+            GodotString::from_str("pawn_promoted"),
+            &[Variant::from_vector2(&Vector2::new(space[0] as f32, space[1] as f32))]);
+    }
+    // turn a pawn into a different piece
+    #[export]
+    pub unsafe fn upgrade_pawn(&mut self, mut owner: Node, dest: Vector2, piece_type: GodotString) {
+        // do this since this method isn't called in sync with the turns
+        // so basing the colour off the player turn could cause problems if players move
+        // too fast.
+        let dest = [dest.x as usize, dest.y as usize];
+        let is_white = self.board[dest[0]][dest[1]].clone().unwrap().is_white();
+        match piece_type.to_string().as_str() {
+            "queen" => {
+                self.board[dest[0]][dest[1]] =
+                    Some(Rc::new(Queen::new(is_white)));
+            },
+            "rook" => {
+                self.board[dest[0]][dest[1]] =
+                    Some(Rc::new(Rook::new(is_white)));
+            },
+            "3" => {
+                self.board[dest[0]][dest[1]] =
+                    Some(Rc::new(Bishop::new(is_white)));
+            },
+            "4" => {
+                self.board[dest[0]][dest[1]] =
+                    Some(Rc::new(Knight::new(is_white)));
+            },
+            _ => {},
         }
+        owner.emit_signal(
+            GodotString::from_str("log_update"),
+            &[Variant::from_str(&format!(" promoted to {}\n", self.board[dest[0]][dest[1]].as_ref().unwrap()))]);
     }
     // read input
     pub fn parse_input(&mut self) -> Option<([usize; 2], [usize; 2])> {
@@ -447,17 +572,17 @@ impl ChessBoard {
         }
         let start = [start_bytes[0] as i32 -97, start_bytes[1] as i32 -49];
         let dest = [dest_bytes[0] as i32 -97, dest_bytes[1] as i32 -49];
-        if start[0] > 7 || start[0] < 0 || start[1] > 7 || start[1] < 0 
+        if start[0] > 7 || start[0] < 0 || start[1] > 7 || start[1] < 0
         || dest[0] > 7 || dest[0] < 0 || dest[1] > 7 || dest[1] < 0 {
             return None;
         }
         Some((
-            [start[0] as usize, start[1] as usize], 
+            [start[0] as usize, start[1] as usize],
             [dest[0] as usize, dest[1] as usize]))
     }
     // make a new board
     fn new_board() -> Vec<Vec<Option<Rc<dyn ChessPiece>>>> {
-        let mut board: Vec<Vec<Option<Rc<dyn ChessPiece>>>> = vec![vec![None; 8]; 8]; 
+        let mut board: Vec<Vec<Option<Rc<dyn ChessPiece>>>> = vec![vec![None; 8]; 8];
         for col in 0..8 {
             // White Pawns
             board[col][1] = Some(Rc::new(Pawn::new(true)));

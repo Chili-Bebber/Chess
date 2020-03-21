@@ -23,10 +23,11 @@ const BLACK_MATERIAL = preload("res://chess/models/pieces/black_piece.tres")
 
 var time = 0.0
 
-const DEFAULT_SPEED = 2.0
+const DEFAULT_SPEED = 1.4
 const DEFAULT_HEIGHT = 2.0
 
 signal moved
+signal moved_internal
 
 func _ready():
     connect("moved", get_parent(), "_piece_moved")
@@ -36,19 +37,22 @@ func _ready():
     mouse_input.connect("drop", self, "_drop")
     mouse_input.connect("click", self, "_click")
     
+    $trans/shadow.set_translation(get_translation())
+    
 func set_piece_type(type: String):
     piece_type = type
-    
+    $MeshInstance.set_mesh(load("res://chess/models/pieces/%s.tres" % type))
 func set_is_white(is_white: bool):
     self.is_white = is_white
-    
-func set_fields(is_white: bool, type: String):
-    if is_white: 
+    if is_white:
         $MeshInstance.set_surface_material(0, WHITE_MATERIAL)
     else:
+        $MeshInstance.rotate(Vector3(0, 1, 0), PI)
         $MeshInstance.set_surface_material(0, BLACK_MATERIAL)
-    self.is_white = is_white
-    piece_type = type
+    
+func set_fields(is_white: bool, type: String):
+    set_piece_type(type)
+    set_is_white(is_white)
     
 # if statements in below functions make sure that if you start dragging
 # a piece and move the mouse off it before the drag timer ends, the drag
@@ -102,6 +106,10 @@ func move(dest: Vector3, speed = DEFAULT_SPEED, height = DEFAULT_HEIGHT, emit_si
         set_translation(dest)
         if emit_signal:
             emit_signal("moved")
+        $trans/RayCast.set_translation($RemoteTransform.get_translation()+get_translation())
+        $trans/RayCast.force_raycast_update()
+        $trans/shadow.set_translation($trans/RayCast.get_collision_point())
+        $trans/shadow.modulate.a = (20.547 - get_translation().y) / 20.0
 # tell the piece to send itself to the stratosphere
 func capture():
     if chess_game.animation_enabled:
@@ -111,19 +119,22 @@ func capture():
         dest_pos = Vector3(0, 20, 0)
         is_moving = true
         is_captured = true
-        slide_speed = 0.2
+        slide_speed = 0.4
         set_process(true)
     else:
         set_translation(Vector3(0, 20, 0))
+        
 func promote(new_type: String):
-    var start = get_translation()
     var tile_pos = get_tile_position()
     var tile_vec = Vector2(tile_pos[0], tile_pos[1])
     var tile_loc = get_tile().get_pos()
-    move(Vector3(0, 14, 0), 0.2)
-    yield(self, "moved")
+    move(get_translation()+Vector3(0.1, 9, 0), 0.4, DEFAULT_HEIGHT, false)
+    yield(self, "moved_internal")
+    set_piece_type(new_type)
+    set_is_white(is_white)
     chess_game.get_node("ChessDirector").upgrade_pawn(tile_vec, new_type)
-    move(start)
+    emit_signal("moved")
+
 # get the square below this piece
 func get_tile_position() -> PoolIntArray:
     var tile = get_tile()
@@ -140,6 +151,9 @@ func get_tile() -> Node:
 
 # _process disabled when not needed
 func _process(delta):
+    $trans/RayCast.force_raycast_update()
+    $trans/shadow.set_translation($trans/RayCast.get_collision_point())
+    $trans/shadow.modulate.a = (20.547 - get_translation().y) / 20.0
     if is_dragged:
         # slide the piece to the mouse position
         if chess_game.animation_enabled:
@@ -185,6 +199,7 @@ func slide(
             emit_signal("moved")
         else:
             emit_signals = true
+        emit_signal("moved_internal")
         return
     if pos.x != to.x or pos.z != to.z:
         if pos.y < height-0.1:

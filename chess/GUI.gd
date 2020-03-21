@@ -8,16 +8,20 @@ onready var log_animator = $LogPanelAnimator
 onready var options_button = $OptionsContainer/CenterContainer/Button
 onready var options_animator = $OptionsContainerAnimator
 onready var log_label = $LogPanel/MarginContainer/VSplitContainer/Log
+onready var score_label = $ScorePanel/MarginContainer/ScoreLabel
 onready var move_entry = $ActionGrid/MoveEntry
 onready var submit_button = $ActionGrid/SubmitButton
 onready var resign_button = $ActionGrid/ResignButton
 onready var draw_button = $ActionGrid/DrawButton
 
+onready var chess_director = get_parent().get_node("ChessDirector")
+
 func _ready():
-    get_parent().get_node("ChessDirector").connect("log_update", self, "_update_log")
+    chess_director.connect("log_update", self, "_update_log")
+    chess_director.connect("score_update", self, "_update_score")
     #get_parent().get_node("ChessDirector").connect("")
-    log_animator.set_speed_scale(2.0)
-    options_animator.set_speed_scale(2.0)
+    log_animator.set_speed_scale(4.0)
+    options_animator.set_speed_scale(4.0)
     log_button.connect("button_up", self, "_toggle_log")
     options_button.connect("button_up", self, "_toggle_options")
 
@@ -40,6 +44,9 @@ func _toggle_log():
         
 func _update_log(entry: String):
     log_label.add_text(entry)
+    
+func _update_score(score_string: String):
+    score_label.set_text(score_string)
     
 func set_actions_enabled(state: bool):
     move_entry.set_editable(state)
