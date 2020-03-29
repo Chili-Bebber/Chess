@@ -1,2 +1,3 @@
 made with godot engine
 wood texture from cc0 textures
+FreeSerif font used
