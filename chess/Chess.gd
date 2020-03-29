@@ -67,6 +67,7 @@ func _out_of_time():
         $GUI._update_log("Black Ran Out of Time\n")
 
 func end_game(message: String, topple_king = false, king_is_white = false):
+    $TurnTimer.stop()
     $GUI/EndPopup.set_visible(true)
     $GUI/EndPopup.set_text(message)
     $GUI.set_actions_enabled(false)

@@ -19,7 +19,7 @@ func _button_up():
     chess_game.reset_draw_mode()
     # set the timer to not be depleted
     gui.timer_ran_out = false
-    if (not turn_timer.is_stopped() or gui.timer_ran_out) and gui.timer_enabled:
+    if gui.timer_enabled:
         turn_timer.stop()
         turn_timer.start()
     gui.timer_label._update_label()

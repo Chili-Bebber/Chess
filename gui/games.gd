@@ -45,7 +45,7 @@ func add_entry(entry_name: String):
 func reset_misc():
     owner.reset_draw_mode()
     get_node("/root/MouseInput").resume_input()
-    if (not turn_timer.is_stopped() or gui.timer_ran_out) and gui.timer_enabled:
+    if gui.timer_enabled:
         turn_timer.stop()
         turn_timer.start()
     gui.timer_ran_out = false

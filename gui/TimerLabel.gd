@@ -7,7 +7,8 @@ func _ready():
     _update_label()
     
 func _update_label():
-    var total_seconds = turn_timer.get_time_left()
-    var minutes = int(total_seconds/60)
-    var seconds = int(total_seconds - minutes*60)
-    set_text("%s:%s" % [minutes, seconds])
+    if not turn_timer.is_stopped():
+        var total_seconds = turn_timer.get_time_left()
+        var minutes = int(total_seconds/60)
+        var seconds = int(total_seconds - minutes*60)
+        set_text("%s:%s" % [minutes, seconds])
