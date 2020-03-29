@@ -36,7 +36,8 @@ MouseInput="*res://chess/input/MouseInput.tscn"
 
 [display]
 
-window/size/height=1024
+window/size/width=800
+window/size/height=700
 
 [input]
 
