@@ -9,7 +9,7 @@ reloadable=true
 
 OSX.64="res://target/debug/libChess.dylib"
 X11.64="res://target/release/libChess.so"
-Windows.64="res://target/debug/libphys.dll"
+Windows.64="res://target/release/Chess.dll"
 
 [dependencies]
 
