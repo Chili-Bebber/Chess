@@ -155,7 +155,7 @@ func get_tile() -> Node:
 func _process(delta):
     $trans/RayCast.force_raycast_update()
     $trans/shadow.set_translation($trans/RayCast.get_collision_point())
-    $trans/shadow.modulate.a = (20.547 - get_translation().y) / 20.0
+    $trans/shadow.modulate.a = (8.547 - get_translation().y) / 8.0
     if is_dragged:
         # slide the piece to the mouse position
         if chess_game.animation_enabled:
