@@ -1,3 +1,2 @@
 made with godot engine
 wood texture from cc0 textures
-chess characters from comical unicode font
