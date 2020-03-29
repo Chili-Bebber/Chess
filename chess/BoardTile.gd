@@ -6,8 +6,7 @@ func get_tile() -> PoolIntArray:
     return tile
 
 func get_pos() -> Vector3:
-    return get_translation()+$CollisionShape.get_translation()
-    
+    return get_translation()+$CollisionShape.get_translation()+Vector3(0,0.8,0)
 func get_piece() -> Node:
     var overlapping_bodies = get_overlapping_bodies()
     if overlapping_bodies.size() > 0:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://chess/ChessDirector.gdns" type="Script" id=1]
 [ext_resource path="res://chess/Chess.gd" type="Script" id=2]
@@ -10,6 +10,15 @@
 [ext_resource path="res://chess/GUI.gd" type="Script" id=8]
 [ext_resource path="res://gui/pawn_promotion_font.tres" type="DynamicFont" id=9]
 [ext_resource path="res://chess/PawnPromotionPopup.gd" type="Script" id=10]
+[ext_resource path="res://gui/save.gd" type="Script" id=11]
+[ext_resource path="res://gui/games.gd" type="Script" id=12]
+[ext_resource path="res://gui/moves.gd" type="Script" id=13]
+[ext_resource path="res://gui/TurnLabel.gd" type="Script" id=14]
+[ext_resource path="res://gui/EndPopup.gd" type="Script" id=15]
+[ext_resource path="res://gui/TimerLabel.gd" type="Script" id=16]
+[ext_resource path="res://gui/SaveLocationLabel.gd" type="Script" id=17]
+[ext_resource path="res://gui/FloatingIndicator.tscn" type="PackedScene" id=18]
+[ext_resource path="res://gui/Indicators.gd" type="Script" id=19]
 
 [sub_resource type="Animation" id=1]
 tracks/0/type = "bezier"
@@ -147,7 +156,116 @@ tracks/0/keys = {
 "values": [ 0.0, -30.0, 30.0, -30.0, 30.0, 0.0 ]
 }
 
-[sub_resource type="Environment" id=4]
+[sub_resource type="Animation" id=4]
+resource_name = "show"
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("SaveLoadContainer:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( 23, -0.25, 0, 0.25, 0, 446, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/1/type = "bezier"
+tracks/1/path = NodePath("SaveLoadContainer:margin_top")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"points": PoolRealArray( -205, -0.25, 0, 0.25, 0, 40, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("SaveLoadContainer/CenterContainer/Button:flat")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/3/type = "bezier"
+tracks/3/path = NodePath("SaveLoadContainer/CenterContainer/Button:self_modulate:r")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/4/type = "bezier"
+tracks/4/path = NodePath("SaveLoadContainer/CenterContainer/Button:self_modulate:g")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/5/type = "bezier"
+tracks/5/path = NodePath("SaveLoadContainer/CenterContainer/Button:self_modulate:b")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/6/type = "bezier"
+tracks/6/path = NodePath("SaveLoadContainer/CenterContainer/Button:self_modulate:a")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"points": PoolRealArray( 0.294118, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/7/type = "bezier"
+tracks/7/path = NodePath("SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer:margin_bottom")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"points": PoolRealArray( 146, -0.25, 0, 0.25, 0, 321, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 1 )
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath("SaveLoadContainer/SaveLoadPanel/TabContainer:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/9/type = "value"
+tracks/9/path = NodePath("SaveLoadContainer/SaveLoadPanel/TabContainer/moves/MarginContainer:margin_bottom")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 143.0, 319.0 ]
+}
+
+[sub_resource type="Environment" id=5]
 background_mode = 1
 background_color = Color( 0.427451, 0.196078, 0.152941, 1 )
 background_energy = 0.0
@@ -160,11 +278,24 @@ ssao_ao_channel_affect = 1.0
 ssao_blur = 2
 ssao_edge_sharpness = 10.86
 
-[sub_resource type="BoxShape" id=5]
+[sub_resource type="BoxShape" id=6]
 extents = Vector3( 40, 0.1, 40 )
+
+[sub_resource type="BoxShape" id=7]
+extents = Vector3( 4.42953, 0.569114, 4.40639 )
+
+[sub_resource type="BoxShape" id=8]
+extents = Vector3( 7.24106, 0.38474, 7.18523 )
+
+[sub_resource type="BoxShape" id=9]
+extents = Vector3( 0.429383, 5.38638, 5.81125 )
 
 [node name="Chess" type="Spatial"]
 script = ExtResource( 2 )
+
+[node name="TurnTimer" type="Timer" parent="."]
+wait_time = 190.0
+one_shot = true
 
 [node name="ChessDirector" type="Node" parent="."]
 script = ExtResource( 1 )
@@ -267,7 +398,7 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -294.0
+margin_left = -421.0
 margin_top = -128.0
 margin_right = -40.0
 margin_bottom = -78.0
@@ -279,14 +410,14 @@ __meta__ = {
 [node name="MarginContainer" type="MarginContainer" parent="GUI/LogPanel"]
 margin_left = 16.0
 margin_top = 15.0
-margin_right = 240.0
+margin_right = 366.0
 margin_bottom = 307.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="VSplitContainer" type="VSplitContainer" parent="GUI/LogPanel/MarginContainer"]
-margin_right = 224.0
+margin_right = 350.0
 margin_bottom = 292.0
 split_offset = 4
 dragger_visibility = 1
@@ -295,20 +426,20 @@ __meta__ = {
 }
 
 [node name="HSplitContainer" type="HSplitContainer" parent="GUI/LogPanel/MarginContainer/VSplitContainer"]
-margin_right = 224.0
+margin_right = 350.0
 margin_bottom = 24.0
-split_offset = 90
+split_offset = 400
 dragger_visibility = 2
 
 [node name="GameLogLabel" type="Label" parent="GUI/LogPanel/MarginContainer/VSplitContainer/HSplitContainer"]
 margin_top = 5.0
-margin_right = 154.0
+margin_right = 305.0
 margin_bottom = 19.0
 text = "Game Log"
 
 [node name="ShowLogButton" type="Button" parent="GUI/LogPanel/MarginContainer/VSplitContainer/HSplitContainer"]
-margin_left = 154.0
-margin_right = 224.0
+margin_left = 305.0
+margin_right = 350.0
 margin_bottom = 24.0
 focus_neighbour_bottom = NodePath("../../../../../ActionGrid/MoveEntry")
 focus_next = NodePath("../../../../../ActionGrid/MoveEntry")
@@ -320,7 +451,7 @@ __meta__ = {
 
 [node name="Log" type="RichTextLabel" parent="GUI/LogPanel/MarginContainer/VSplitContainer"]
 margin_top = 36.0
-margin_right = 224.0
+margin_right = 350.0
 margin_bottom = 292.0
 custom_fonts/normal_font = ExtResource( 7 )
 scroll_following = true
@@ -333,9 +464,9 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -344.0
+margin_left = -416.0
 margin_top = -64.0
-margin_right = -40.0
+margin_right = -35.0
 margin_bottom = -40.0
 columns = 5
 __meta__ = {
@@ -344,13 +475,13 @@ __meta__ = {
 
 [node name="Label" type="Label" parent="GUI/ActionGrid"]
 margin_top = 5.0
-margin_right = 47.0
+margin_right = 118.0
 margin_bottom = 19.0
-text = "Move:  "
+text = "input move here:  "
 
 [node name="MoveEntry" type="LineEdit" parent="GUI/ActionGrid"]
-margin_left = 51.0
-margin_right = 109.0
+margin_left = 122.0
+margin_right = 180.0
 margin_bottom = 24.0
 rect_pivot_offset = Vector2( 30, 12 )
 focus_neighbour_top = NodePath("../../LogPanel/MarginContainer/VSplitContainer/HSplitContainer/ShowLogButton")
@@ -362,10 +493,11 @@ selecting_enabled = false
 placeholder_text = "\"a1 a2\""
 placeholder_alpha = 0.299
 caret_blink = true
+caret_blink_speed = 0.5
 
 [node name="SubmitButton" type="Button" parent="GUI/ActionGrid"]
-margin_left = 113.0
-margin_right = 170.0
+margin_left = 184.0
+margin_right = 241.0
 margin_bottom = 24.0
 focus_neighbour_left = NodePath("../MoveEntry")
 focus_neighbour_top = NodePath("../../LogPanel/MarginContainer/VSplitContainer/HSplitContainer/ShowLogButton")
@@ -375,8 +507,8 @@ focus_previous = NodePath("../MoveEntry")
 text = "submit"
 
 [node name="ResignButton" type="Button" parent="GUI/ActionGrid"]
-margin_left = 174.0
-margin_right = 225.0
+margin_left = 245.0
+margin_right = 296.0
 margin_bottom = 24.0
 text = "resign"
 __meta__ = {
@@ -384,8 +516,8 @@ __meta__ = {
 }
 
 [node name="DrawButton" type="Button" parent="GUI/ActionGrid"]
-margin_left = 229.0
-margin_right = 304.0
+margin_left = 300.0
+margin_right = 375.0
 margin_bottom = 24.0
 text = "offer draw"
 
@@ -466,6 +598,7 @@ margin_left = 86.0
 margin_right = 160.0
 margin_bottom = 24.0
 max_value = 60.0
+value = 3.0
 align = 2
 suffix = ":"
 
@@ -474,8 +607,276 @@ margin_left = 164.0
 margin_right = 238.0
 margin_bottom = 24.0
 max_value = 59.0
+value = 10.0
 
-[node name="TimerContainer" type="HSplitContainer" parent="GUI"]
+[node name="SaveLoadContainer" type="VSplitContainer" parent="GUI"]
+margin_left = 40.0
+margin_top = -205.0
+margin_right = 299.0
+margin_bottom = 23.0
+split_offset = 300
+dragger_visibility = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SaveLoadPanel" type="PanelContainer" parent="GUI/SaveLoadContainer"]
+margin_right = 259.0
+margin_bottom = 196.0
+
+[node name="TabContainer" type="TabContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel"]
+visible = false
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 252.0
+margin_bottom = 211.0
+
+[node name="save" type="Tabs" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+script = ExtResource( 11 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save"]
+margin_right = 239.0
+margin_bottom = 252.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer"]
+margin_right = 239.0
+margin_bottom = 24.0
+
+[node name="NameEdit" type="LineEdit" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/MarginContainer"]
+margin_right = 239.0
+margin_bottom = 24.0
+align = 1
+max_length = 20
+expand_to_text_length = true
+placeholder_text = "name (20 letter max)"
+caret_blink = true
+caret_blink_speed = 0.5
+
+[node name="HSplitContainer" type="HSplitContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer"]
+margin_top = 28.0
+margin_right = 239.0
+margin_bottom = 48.0
+split_offset = 59
+dragger_visibility = 1
+
+[node name="SaveButton" type="Button" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/HSplitContainer"]
+margin_right = 239.0
+margin_bottom = 20.0
+text = "save"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/HSplitContainer"]
+visible = false
+margin_left = 100.0
+margin_right = 239.0
+margin_bottom = 20.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="OverwriteLabel" type="Label" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/HSplitContainer/HBoxContainer"]
+margin_top = 3.0
+margin_right = 69.0
+margin_bottom = 17.0
+text = "Overwrite?"
+
+[node name="ConfirmButton" type="Button" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/HSplitContainer/HBoxContainer"]
+margin_left = 73.0
+margin_right = 107.0
+margin_bottom = 20.0
+text = "yes"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CancelButton" type="Button" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/HSplitContainer/HBoxContainer"]
+margin_left = 111.0
+margin_right = 139.0
+margin_bottom = 20.0
+text = "no"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer"]
+margin_top = 52.0
+margin_right = 239.0
+margin_bottom = 83.0
+text = "
+Save File Directory:"
+align = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer"]
+margin_top = 87.0
+margin_right = 239.0
+margin_bottom = 101.0
+scroll_vertical_enabled = false
+
+[node name="SaveLocationLabel" type="Label" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/save/VBoxContainer/ScrollContainer"]
+margin_bottom = 14.0
+script = ExtResource( 17 )
+
+[node name="games" type="Tabs" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+script = ExtResource( 12 )
+
+[node name="VSplitContainer" type="VSplitContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games"]
+margin_left = -3.0
+margin_top = 4.0
+margin_right = 241.0
+margin_bottom = 146.0
+split_offset = 300
+dragger_visibility = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer"]
+margin_right = 244.0
+margin_bottom = 297.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScrollContainer" type="ScrollContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer/MarginContainer"]
+margin_right = 244.0
+margin_bottom = 297.0
+scroll_horizontal_enabled = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer/MarginContainer/ScrollContainer"]
+margin_right = 231.0
+margin_bottom = 14.0
+custom_constants/separation = 5
+alignment = 1
+
+[node name="placeholder" type="Label" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer/MarginContainer/ScrollContainer/VBoxContainer" groups=[
+"flag_placeholder",
+]]
+margin_right = 231.0
+margin_bottom = 14.0
+text = "                   saved games:                 "
+
+[node name="CenterContainer" type="CenterContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer"]
+margin_top = 297.0
+margin_right = 244.0
+margin_bottom = 317.0
+
+[node name="Button" type="Button" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/games/VSplitContainer/CenterContainer"]
+margin_left = 83.0
+margin_right = 160.0
+margin_bottom = 20.0
+text = "new game"
+
+[node name="moves" type="Tabs" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+script = ExtResource( 13 )
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/moves"]
+margin_left = 79.0
+margin_top = 7.0
+margin_right = 237.0
+margin_bottom = 143.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScrollContainer" type="ScrollContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/moves/MarginContainer"]
+margin_right = 158.0
+margin_bottom = 136.0
+follow_focus = true
+scroll_horizontal_enabled = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/moves/MarginContainer/ScrollContainer"]
+
+[node name="CenterContainer" type="CenterContainer" parent="GUI/SaveLoadContainer"]
+margin_top = 208.0
+margin_right = 259.0
+margin_bottom = 228.0
+
+[node name="Button" type="Button" parent="GUI/SaveLoadContainer/CenterContainer"]
+self_modulate = Color( 1, 1, 1, 0.294118 )
+margin_left = 89.0
+margin_right = 170.0
+margin_bottom = 20.0
+text = "save / load"
+flat = true
+
+[node name="EndPopup" type="PopupPanel" parent="GUI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -135.5
+margin_top = -43.0
+margin_right = 135.5
+margin_bottom = 43.0
+popup_exclusive = true
+script = ExtResource( 15 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VSplitContainer" type="VSplitContainer" parent="GUI/EndPopup"]
+margin_left = 4.0
+margin_top = 4.0
+margin_right = 267.0
+margin_bottom = 82.0
+split_offset = 20
+dragger_visibility = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EndMessageContainer" type="CenterContainer" parent="GUI/EndPopup/VSplitContainer"]
+margin_right = 263.0
+margin_bottom = 50.0
+
+[node name="EndMessage" type="Label" parent="GUI/EndPopup/VSplitContainer/EndMessageContainer"]
+margin_left = 131.0
+margin_top = 10.0
+margin_right = 131.0
+margin_bottom = 40.0
+custom_fonts/font = ExtResource( 5 )
+
+[node name="NewGameContainer" type="CenterContainer" parent="GUI/EndPopup/VSplitContainer"]
+margin_top = 50.0
+margin_right = 263.0
+margin_bottom = 78.0
+
+[node name="NewGame" type="Button" parent="GUI/EndPopup/VSplitContainer/NewGameContainer"]
+margin_left = 93.0
+margin_top = 4.0
+margin_right = 170.0
+margin_bottom = 24.0
+text = "new game"
+
+[node name="InfoContainer" type="HSplitContainer" parent="GUI"]
 anchor_left = 1.0
 anchor_right = 1.0
 margin_left = -264.0
@@ -488,22 +889,27 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="WhiteTime" type="Label" parent="GUI/TimerContainer"]
+[node name="Turn" type="Label" parent="GUI/InfoContainer"]
 margin_top = 5.0
-margin_right = 126.0
+margin_right = 199.0
 margin_bottom = 35.0
 custom_fonts/font = ExtResource( 5 )
 text = "White's Turn"
 align = 1
+script = ExtResource( 14 )
 
-[node name="BlackTime" type="Label" parent="GUI/TimerContainer"]
+[node name="Timer" type="Label" parent="GUI/InfoContainer"]
+visible = false
 margin_left = 138.0
 margin_top = 5.0
 margin_right = 199.0
 margin_bottom = 35.0
 custom_fonts/font = ExtResource( 5 )
-text = "3:02"
 align = 1
+script = ExtResource( 16 )
+
+[node name="SecondTimer" type="Timer" parent="GUI/InfoContainer/Timer"]
+autostart = true
 
 [node name="LogPanelAnimator" type="AnimationPlayer" parent="GUI"]
 root_node = NodePath("../LogPanel")
@@ -517,8 +923,95 @@ anims/show = SubResource( 2 )
 playback_speed = 3.0
 anims/move_entry_shake = SubResource( 3 )
 
+[node name="SaveLoadAnimator" type="AnimationPlayer" parent="GUI"]
+playback_speed = 4.0
+anims/show = SubResource( 4 )
+
 [node name="Pieces" type="Node" parent="."]
 script = ExtResource( 6 )
+
+[node name="Indicators" type="Node" parent="."]
+script = ExtResource( 19 )
+
+[node name="a" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.63034, 0.8, 4.7 )
+visible = false
+label = "a"
+
+[node name="b" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.59034, 0.8, 4.7 )
+visible = false
+label = "b"
+
+[node name="c" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.55034, 0.8, 4.7 )
+visible = false
+label = "c"
+
+[node name="d" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.510338, 0.8, 4.7 )
+visible = false
+label = "d"
+
+[node name="e" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.529662, 0.8, 4.7 )
+visible = false
+label = "e"
+
+[node name="f" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.56966, 0.8, 4.7 )
+visible = false
+label = "f"
+
+[node name="g" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.60966, 0.8, 4.7 )
+visible = false
+label = "g"
+
+[node name="h" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.64966, 0.8, 4.7 )
+visible = false
+label = "h"
+
+[node name="1" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67928, 0.8, 3.62352 )
+visible = false
+label = "1"
+
+[node name="2" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67873, 0.8, 2.58352 )
+visible = false
+label = "2"
+
+[node name="3" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67819, 0.8, 1.54352 )
+visible = false
+label = "3"
+
+[node name="4" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67764, 0.8, 0.503519 )
+visible = false
+label = "4"
+
+[node name="5" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.6771, 0.8, -0.536481 )
+visible = false
+label = "5"
+
+[node name="6" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67655, 0.8, -1.57648 )
+visible = false
+label = "6"
+
+[node name="7" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67601, 0.8, -2.61648 )
+visible = false
+label = "7"
+
+[node name="8" parent="Indicators" instance=ExtResource( 18 )]
+transform = Transform( 0.000523472, 0, 1, 0, 1, 0, -1, 0, 0.000523472, -4.67547, 0.8, -3.65648 )
+visible = false
+label = "8"
 
 [node name="Tiles" type="Node" parent="."]
 
@@ -783,7 +1276,7 @@ collision_mask = 2
 spring_length = 13.0
 
 [node name="Camera" type="Camera" parent="CameraArm"]
-environment = SubResource( 4 )
+environment = SubResource( 5 )
 
 [node name="CameraRay" type="RayCast" parent="."]
 collision_mask = 2
@@ -791,16 +1284,12 @@ collide_with_areas = true
 collide_with_bodies = false
 
 [node name="BoardSurface" type="Area" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.690446, 0 )
-visible = false
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.456095, 0 )
 collision_layer = 2
 collision_mask = 0
-__meta__ = {
-"_edit_lock_": true
-}
 
 [node name="CollisionShape" type="CollisionShape" parent="BoardSurface"]
-shape = SubResource( 5 )
+shape = SubResource( 6 )
 
 [node name="ChessBoardModel" parent="." instance=ExtResource( 3 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.62795, 0 )
@@ -814,3 +1303,35 @@ omni_range = 35.2765
 
 [node name="DirectionalLight" type="DirectionalLight" parent="Lighting"]
 transform = Transform( 0.660107, 0.43122, -0.615068, 0, 0.818812, 0.574062, 0.751172, -0.378942, 0.540503, -10.196, 5.4586, 27.3361 )
+
+[node name="BoardCollision" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0614715, 0 )
+visible = false
+input_ray_pickable = false
+collision_layer = 4
+collision_mask = 4096
+__meta__ = {
+"_editor_description_": ""
+}
+
+[node name="CollisionShape" type="CollisionShape" parent="BoardCollision"]
+shape = SubResource( 7 )
+
+[node name="CollisionShape2" type="CollisionShape" parent="BoardCollision"]
+shape = SubResource( 8 )
+
+[node name="CollisionShape3" type="CollisionShape" parent="BoardCollision"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5534, 2.38154, 0 )
+shape = SubResource( 9 )
+
+[node name="CollisionShape4" type="CollisionShape" parent="BoardCollision"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6062, 2.38154, 0 )
+shape = SubResource( 9 )
+
+[node name="CollisionShape5" type="CollisionShape" parent="BoardCollision"]
+transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, -0.116253, 2.38154, 6.40137 )
+shape = SubResource( 9 )
+
+[node name="CollisionShape6" type="CollisionShape" parent="BoardCollision"]
+transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, -0.116253, 2.38154, -6.34844 )
+shape = SubResource( 9 )

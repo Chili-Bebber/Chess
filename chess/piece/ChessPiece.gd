@@ -23,8 +23,8 @@ const BLACK_MATERIAL = preload("res://chess/models/pieces/black_piece.tres")
 
 var time = 0.0
 
-const DEFAULT_SPEED = 1.4
-const DEFAULT_HEIGHT = 2.0
+const DEFAULT_SPEED = 1.0
+const DEFAULT_HEIGHT = 4.0
 
 signal moved
 signal moved_internal
@@ -47,7 +47,7 @@ func set_is_white(is_white: bool):
     if is_white:
         $MeshInstance.set_surface_material(0, WHITE_MATERIAL)
     else:
-        $MeshInstance.rotate(Vector3(0, 1, 0), PI)
+        $MeshInstance.set_rotation(Vector3(0, PI, 0))
         $MeshInstance.set_surface_material(0, BLACK_MATERIAL)
     
 func set_fields(is_white: bool, type: String):
@@ -58,14 +58,15 @@ func set_fields(is_white: bool, type: String):
 # a piece and move the mouse off it before the drag timer ends, the drag
 # is still registered
 func _mouse_entered():
-    if not Input.is_action_pressed("click"):
-        is_active = true
+#    if not Input.is_action_pressed("click"):
+    is_active = true
 func _mouse_exited():
     is_active = false
    
 # pick up the piece 
 func _drag():
     if is_active and not is_moving and is_white == chess_game.is_white_turn:
+        get_parent().owner.get_node("GUI").set_actions_enabled(false)
         is_dragged = true
         is_moving = true
         start = get_tile_position()
@@ -122,6 +123,7 @@ func capture():
         slide_speed = 0.4
         set_process(true)
     else:
+        $trans/shadow.modulate.a = 0
         set_translation(Vector3(0, 20, 0))
         
 func promote(new_type: String):
@@ -133,7 +135,7 @@ func promote(new_type: String):
     set_piece_type(new_type)
     set_is_white(is_white)
     chess_game.get_node("ChessDirector").upgrade_pawn(tile_vec, new_type)
-    emit_signal("moved")
+    move(start_pos)
 
 # get the square below this piece
 func get_tile_position() -> PoolIntArray:
@@ -173,10 +175,10 @@ func _process(delta):
             false,
             true)
         if is_captured and get_translation().y > 8:
-            # reset this here so we don't have to later
-            is_captured = false
+            queue_free()
             emit_signal("moved")
-    else:
+    # if the piece is processing physics, keep its shadow updating
+    elif get_mode() != MODE_RIGID:
         set_process(false)
 
 # slide the piece from one location to another          

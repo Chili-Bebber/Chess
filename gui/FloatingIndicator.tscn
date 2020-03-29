@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://gui/FreeSerif-YO4a.otf" type="DynamicFontData" id=1]
+[ext_resource path="res://gui/FloatingIndicator.gd" type="Script" id=2]
+
+[sub_resource type="DynamicFont" id=1]
+size = 50
+outline_size = 4
+outline_color = Color( 0, 0, 0, 0.839216 )
+font_data = ExtResource( 1 )
+
+[sub_resource type="SpatialMaterial" id=3]
+render_priority = -2
+flags_transparent = true
+flags_unshaded = true
+flags_no_depth_test = true
+params_billboard_mode = 1
+
+[sub_resource type="ViewportTexture" id=2]
+viewport_path = NodePath("Viewport")
+
+[node name="FloatingIndicator" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="Viewport" type="Viewport" parent="."]
+size = Vector2( 50, 70 )
+transparent_bg = true
+disable_3d = true
+usage = 0
+
+[node name="Label" type="Label" parent="Viewport"]
+anchor_left = 0.28
+anchor_right = 0.28
+custom_fonts/font = SubResource( 1 )
+text = "*"
+
+[node name="Sprite" type="Sprite3D" parent="."]
+material_override = SubResource( 3 )
+cast_shadow = 0
+flip_v = true
+billboard = 1
+texture = SubResource( 2 )

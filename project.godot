@@ -29,6 +29,10 @@ config/icon="res://icon.png"
 
 MouseInput="*res://chess/input/MouseInput.tscn"
 
+[display]
+
+window/size/height=1024
+
 [input]
 
 click={

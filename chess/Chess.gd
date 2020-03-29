@@ -6,6 +6,10 @@ onready var move_entry = $GUI/ActionGrid/MoveEntry
 onready var submit_button = $GUI/ActionGrid/SubmitButton
 onready var pawn_promotion_popup = $GUI/PawnPromotionPopup
 onready var mouse_input = get_node("/root/MouseInput")
+onready var move_list = $GUI/SaveLoadContainer/SaveLoadPanel/TabContainer/moves
+onready var turn_label = $GUI/InfoContainer/Turn
+onready var turn_timer = $TurnTimer
+onready var draw_button = $GUI/ActionGrid/DrawButton
 
 var popup_open = false
 var is_white_turn = true
@@ -17,12 +21,17 @@ var drag_point = Vector3()
 var animation_enabled = true
 var move_start = Vector3()
 var move_dest = Vector3()
+var winner = -2
+var draw_accept_mode = false
+var draw_offered = false
 
 const BOARD_WIDTH = 4.2
 
 signal queue_resolved
 
 func _ready():
+    draw_button.connect("button_up", self, "_handle_draw")
+    turn_timer.connect("timeout", self, "_out_of_time")
     $ChessDirector.connect("game_over", self, "_on_game_over")
     $ChessDirector.connect("move_is_legal", self, "_move_tried")
     $ChessDirector.connect("castle", self, "_castle")
@@ -31,12 +40,40 @@ func _ready():
     $Pieces.connect("piece_moved", self, "_piece_moved")
     $GUI/OptionsContainer/OptionsPanel/VBoxContainer/AnimationToggle.connect(
         "toggled", self, "_animation_toggled")
-    
     move_entry.connect("text_entered", self, "_move_entered")
     submit_button.connect("pressed", self, "_move_entered")
-    
     $Pieces.new_game()
     
+func _handle_draw():
+    if draw_accept_mode:
+        end_game("Draw")
+        $GUI._update_log("Draw\n")
+    else:
+        draw_offered = true
+
+func reset_draw_mode():
+    draw_button.set_text("offer draw")
+    draw_offered = false
+    draw_accept_mode = false
+
+func _out_of_time():
+    $Pieces.halt_pieces()
+    $GUI.timer_ran_out = true
+    if is_white_turn:
+        end_game("White Ran Out of Time")
+        $GUI._update_log("White Ran Out of Time\n")
+    else:
+        end_game("Black Ran Out of Time")
+        $GUI._update_log("Black Ran Out of Time\n")
+
+func end_game(message: String, topple_king = false, king_is_white = false):
+    $GUI/EndPopup.set_visible(true)
+    $GUI/EndPopup.set_text(message)
+    $GUI.set_actions_enabled(false)
+    mouse_input.suspend_input()
+    if topple_king and animation_enabled:
+        $Pieces.topple_king(king_is_white)
+
 func _move_entered(input = ""):
     if input == "":
         input = move_entry.get_text()
@@ -55,7 +92,6 @@ func _move_tried(move_was_legal: bool):
     $GUI.set_actions_enabled(false)
     mouse_input.suspend_input()
     if move_was_legal:
-        is_white_turn = not is_white_turn
         signal_queue[0].append("move")
         signal_queue[1].append(Vector2())
     elif held_piece and (held_piece.is_moving || not animation_enabled):
@@ -63,12 +99,40 @@ func _move_tried(move_was_legal: bool):
         signal_queue[1].append(Vector2(-1, -1))    
     resolve_queue()
     if held_piece and held_piece.is_moving:
-        yield(self, "queue_resolved")
-    if not popup_open:
+        yield(self, "queue_resolved") # wait for animations before the next turn
+        if move_was_legal:
+            # update the state of the draw button
+            if draw_offered:
+                draw_offered = false
+                draw_accept_mode = true
+                draw_button.set_text("accept draw")
+            else:
+                reset_draw_mode()
+            # switch which player's turn it is
+            is_white_turn = not is_white_turn
+            turn_label.set_player(is_white_turn)
+            # reset the timer
+            if not turn_timer.is_stopped():
+                turn_timer.stop()
+                turn_timer.start()
+                $GUI/InfoContainer/Timer._update_label()
+    if not popup_open and winner == -2:
         $GUI.set_actions_enabled(true)
         mouse_input.resume_input()
+    elif winner != -2:
+        resolve_game_end(winner)
     $GUI.clear_move_entry()
     
+func resolve_game_end(code: int):
+    if code == 0:
+        end_game("Stalemate")
+    elif code == -1:
+        end_game("Black Checkmates White", true, true)
+    elif code == 1:
+        end_game("White Checkmates Black", true, false)
+    else:
+        end_game("Draw")
+
 func _piece_moved():
     resolve_queue()
     
@@ -162,9 +226,11 @@ func _pawn_promoted(pawn_position: Vector2):
     signal_queue[0].append("pawn_promotion")
     signal_queue[1].append(pawn_position)
 
-func _on_game_over(winner: int):
-    # TODO make a big showoffy ending
-    pass
+func _on_game_over(code: int):
+    winner = code
+    if not held_piece:
+        resolve_game_end(code)
+
     
 func try_move_drag(piece: RigidBody, start: PoolIntArray, dest: PoolIntArray):
     held_piece = piece
@@ -213,7 +279,7 @@ func _input(event):
                     point.z = BOARD_WIDTH
                 else:
                     point.z = -BOARD_WIDTH
-            var drag_position = point + Vector3(0, 2, 0)
+            var drag_position = point + Vector3(0, 4, 0)
             drag_point = drag_position
 #	elif event is InputEventMouseButton:
 #		var arm_length = $CameraArm.get_length()

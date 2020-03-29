@@ -7,7 +7,31 @@ onready var chess_game = get_parent()
 func _piece_moved():
     emit_signal("piece_moved")
     
+func clear_board():
+    for child in get_children():
+        child.queue_free()
+    
+func instance_piece(is_white: bool, piece_type: String, pos_vector: Vector2):
+    var pos = PoolIntArray([pos_vector.x, pos_vector.y])
+    var new_piece = PIECE.instance()
+    new_piece.set_fields(is_white, piece_type)
+    new_piece.set_translation(
+        chess_game.get_tile(pos).get_pos())
+    add_child(new_piece)
+    
+func topple_king(is_white: bool):
+    for child in get_children():
+        child.set_process(true)
+        child.set_mode(child.MODE_RIGID)
+        if child.piece_type == "king" and child.is_white == is_white:
+            child.apply_impulse(Vector3(0,1,2), Vector3(0.5,0.5,0))
+            
+func halt_pieces():
+    for child in get_children():
+        child.set_process(false)
+
 func new_game():
+    clear_board()
     #pawns
     for i in range(8):
         var white_pawn = PIECE.instance()

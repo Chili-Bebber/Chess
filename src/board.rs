@@ -1,9 +1,11 @@
+extern crate dirs;
+
 use crate::{chesspiece::*, game::*};
-use std::{fmt, rc::Rc, io::{self, Stdin}};
+use std::{fs::{self, File}, fmt, rc::Rc, io::{self, Stdin, prelude::*}, path::PathBuf};
 use godot::{
     init::{PropertyHint, PropertyUsage, SignalArgument, Signal, ClassBuilder},
     user_data::MutexData,
-    Node, Int32Array, Variant, GodotString, Vector2
+    Node, Int32Array, Variant, GodotString, Vector2, NodePath, StringArray
 };
 
 // ChessBoard struct
@@ -23,6 +25,8 @@ pub struct ChessBoard {
     black_can_castle_right: bool,
     white_king_pos: [usize; 2],
     black_king_pos: [usize; 2],
+    game_save: String,
+    turn_num: usize,
 }
 
 unsafe impl Send for ChessBoard {}
@@ -36,6 +40,7 @@ impl godot::NativeClass for ChessBoard {
     fn init(owner: Self::Base) -> Self {
         Self::new()
     }
+    // set up all the signals
     fn register_properties(builder: &ClassBuilder<Self>) {
         builder.add_signal(Signal {
             name: "game_over",
@@ -100,6 +105,36 @@ impl godot::NativeClass for ChessBoard {
                 usage: PropertyUsage::DEFAULT,
             }],
         });
+        builder.add_signal(Signal {
+            name: "save_loaded",
+            args: &[SignalArgument {
+                name: "board_state",
+                default: Variant::from_str(""),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        // currently unused
+        builder.add_signal(Signal {
+            name: "error",
+            args: &[SignalArgument {
+                name: "message",
+                default: Variant::from_str(""),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
+        // not self explanatory. This signal tells godot to
+        // refresh how many moves are loadable by the user
+        builder.add_signal(Signal {
+            name: "update_moves",
+            args: &[SignalArgument {
+                name: "turns",
+                default: Variant::from_i64(0),
+                hint: PropertyHint::None,
+                usage: PropertyUsage::DEFAULT,
+            }],
+        });
     }
 }
 
@@ -127,57 +162,61 @@ impl Game for ChessBoard {
         self.black_can_castle_right = true;
         self.white_king_pos = [4, 0];
         self.black_king_pos = [4, 7];
+        self.turn_num = 0;
     }
-    // called from game_loop. Represents the course of a turn NOT ANYMORE HAAAHAHAHAHHAAAA
+    // called from godot whenever the player does something
+    // represents the course of a turn
     unsafe fn take_turn(&mut self, mut owner: Node, start: [usize; 2], dest: [usize;2]) -> bool {
-        if self.test_stalemate(self.player) {
-            if self.test_checkmate(self.player) { 
-                if self.player {
-                    owner.emit_signal(
-                        GodotString::from_str("game_over"),
-                        &[Variant::from_i64(-1)]);
-                } else {
-                    owner.emit_signal(
-                        GodotString::from_str("game_over"),
-                        &[Variant::from_i64(-1)]);
-                }
-            } else {
-                owner.emit_signal(
-                    GodotString::from_str("game_over"),
-                    &[Variant::from_i64(0)]);
-            }
-            return false;
-        }
         if let Some(piece) = (self.board[start[0]][start[1]]).clone() {
             let mut pawn_promoted = false;
             if !self.test_check(start, dest, self.player)
             && piece.is_white() == self.player {
+                //let save_clone = self.game_save.clone();
                 if piece.test_move(start, dest, self) {
+                    let mut save_vec: Vec<&str> = self.game_save.lines().collect(); 
+                    // truncate save to current move after a move is made
+                    if save_vec.len()/17 > self.turn_num {
+                        let truncated_save_iter = save_vec.drain(0..self.turn_num*17);
+                        let truncated_save = truncated_save_iter.fold(
+                            String::new(), |mut save, line| {
+                                save.push_str(&format!("{}\n", line));
+                                save
+                            }
+                        );
+                        self.game_save = truncated_save;
+                    }
+                    self.turn_num += 1;
+                    let move_string = format!("{}: {} {}{} → {}{}",
+                                              self.turn_num,
+                                              piece,
+                                              (start[0]+97) as u8 as char,
+                                              start[1]+1,
+                                              (dest[0]+97) as u8 as char,
+                                              dest[1]+1);
                     owner.emit_signal(
                         GodotString::from_str("log_update"),
-                        &[Variant::from_str(&format!("{} {}{} → {}{}", 
-                                                       piece, 
-                                                       (start[0]+97) as u8 as char, 
-                                                       start[1]+1, 
-                                                       (dest[0]+97) as u8 as char, 
-                                                       dest[1]+1))]);
+                        &[Variant::from_str(&move_string)]);
+                    // we need to store the string representation of any captures that happen and
+                    // then write them later because of how pawn promotion is out of sync with the
+                    // rust turn order.
+                    let mut capture_string = String::new();
                     // if piece is a pawn
                     if piece.get_piece_type() == &PieceType::Pawn {
                         if self.player {
                             if self.black_en_passant.is_some() && dest == self.black_en_passant.unwrap() {
-                                self.capture(owner, [dest[0], dest[1]-1]);
+                                capture_string = self.capture(owner, [dest[0], dest[1]-1]);
                             } else if dest[1]-start[1] == 2 {
                                 self.white_en_passant = Some([dest[0], dest[1]-1]);
                             } else {
-                                self.capture(owner, dest);
+                                capture_string = self.capture(owner, dest);
                             }
                         } else {
                             if self.white_en_passant.is_some() && dest == self.white_en_passant.unwrap() {
-                                self.capture(owner, [dest[0], dest[1]+1]);
+                                capture_string = self.capture(owner, [dest[0], dest[1]+1]);
                             } else if start[1]-dest[1] == 2 {
                                 self.black_en_passant = Some([dest[0], dest[1]+1]);
                             } else {
-                                self.capture(owner, dest);
+                                capture_string = self.capture(owner, dest);
                             }
                         }
                     } else {
@@ -237,7 +276,7 @@ impl Game for ChessBoard {
                                 }
                             }
                         }
-                        self.capture(owner, dest);
+                        capture_string = self.capture(owner, dest);
                     }
                     self.board[dest[0]][dest[1]] = Some(piece.clone());
                     self.board[start[0]][start[1]] = None;
@@ -251,10 +290,54 @@ impl Game for ChessBoard {
                     } else if !self.player && self.white_en_passant.is_some() {
                         self.white_en_passant = None;
                     }
+                    // save file stuff
+                    // score
+                    self.game_save.push_str(&self.get_score());
+                    // white's allowed castling directions
+                    let white_castle_str = match (self.white_can_castle_left, 
+                                                  self.white_can_castle_right) {
+                        (true, true) => "b\n",
+                        (true, false) => "l\n",
+                        (false, true) => "r\n",
+                        _ => "\n",
+                    };
+                    self.game_save.push_str(white_castle_str);
+                    // black's allowed castling directions
+                    let black_castle_str = match (self.black_can_castle_left,
+                                                  self.black_can_castle_right) {
+                        (true, true) => "b\n",
+                        (true, false) => "l\n",
+                        (false, true) => "r\n",
+                        _ => "\n",
+                    };
+                    self.game_save.push_str(black_castle_str);
+                    // white's en passant col
+                    let white_en_passant_string = match (self.white_en_passant) {
+                        Some(space) => format!("{}\n", space[0]),
+                        None => String::from("\n"), 
+                    };
+                    // black's en passant col
+                    self.game_save.push_str(&white_en_passant_string);
+                    let black_en_passant_string = match (self.black_en_passant) {
+                        Some(space) => format!("{}\n", space[0]),
+                        None => String::from("\n"),
+                    };
+                    self.game_save.push_str(&black_en_passant_string);
+                    // most recent move
+                    self.game_save.push_str(&move_string);
+                    self.game_save.push_str(&capture_string);
+                    // tell godot to refresh the list of moves
+                    owner.emit_signal(
+                        GodotString::from_str("update_moves"),
+                        &[Variant::from_i64(self.turn_num as i64)]);
                     if !pawn_promoted {
+                        self.test_checkmate_stalemate(owner);
                         owner.emit_signal(
                             GodotString::from_str("log_update"),
                             &[Variant::from_str("\n")]);
+                        self.game_save.push_str("\n");
+                        // the board
+                        self.game_save.push_str(&format!("{}", self));
                     }
                     return true;
                 }
@@ -268,7 +351,7 @@ impl Game for ChessBoard {
         println!("{}", self);
     }
     fn get_score(&self) -> String {
-        format!("White Score: {} \n{}\nBlack Score: {}\n{}", 
+        format!("White Score: {} \n{}\nBlack Score: {}\n{}\n", 
                 self.score[0], self.white_captured,
                 self.score[1], self.black_captured)
     }
@@ -285,30 +368,54 @@ impl Game for ChessBoard {
         }
     }
 }
-// allow ChessBoard to be printed
+// allow ChessBoard to be represented as a string.
+// used to be for displaying the board, but now it's used
+// for saving the game into a file to be loaded later
 impl fmt::Display for ChessBoard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for row in (0..8).rev() {
-            write!(f, "{}[0;m{} ", 27 as char, row+1)?;
+        for row in 0..8 {
             for col in 0..8 {
-                if (col+row)%2 == 0 {
-                    write!(f, "{}[40;102m", 27 as char)?;
-                } else {
-                    write!(f, "{}[0;m", 27 as char)?;
-                }
                 if let Some(chess_piece) = &self.board[col][row] {
-                    write!(f, " {} ", chess_piece)?;
+                    write!(f, "{}", chess_piece)?;
                 } else {
-                    write!(f, "   ")?;
+                    write!(f, " ")?;
                 }
             }
             writeln!(f)?;
         }
-        write!(f, "{}[0;m   a  b  c  d  e  f  g  h", 27 as char)
+        write!(f, "")
     }
 }
 #[methods]
 impl ChessBoard {
+    // test for checkmate and stalemate and tell godot if anything was detected
+    unsafe fn test_checkmate_stalemate(&mut self, mut owner: Node) {
+        if self.test_stalemate(!self.player) {
+            if self.test_checkmate(!self.player) { 
+                if self.player {
+                    owner.emit_signal(
+                        GodotString::from_str("game_over"),
+                        &[Variant::from_i64(1)]);
+                } else {
+                    owner.emit_signal(
+                        GodotString::from_str("game_over"),
+                        &[Variant::from_i64(-1)]);
+                }
+                self.game_save.push_str(" checkmate");
+            } else {
+                owner.emit_signal(
+                    GodotString::from_str("game_over"),
+                    &[Variant::from_i64(0)]);
+                self.game_save.push_str(" stalemate");
+            }
+        }
+    }
+    // just a call to new_game() that is  exposed to godot
+    #[export]
+    fn reset_game(&mut self, owner: Node) {
+        self.new_game();
+    }
+    // movement method, but this one is exposed to godot and emits signals
     #[export]
     unsafe fn try_move(&mut self, owner: Node, start: Int32Array, dest: Int32Array) {
         let start = [start.get(0) as usize, start.get(1) as usize];
@@ -316,6 +423,263 @@ impl ChessBoard {
         owner.clone().emit_signal(
             GodotString::from_str("move_is_legal"),
             &[Variant::from_bool(self.next_turn(owner, start, dest))]);
+    }
+    // write the contents of game_save field to a file
+    #[export]
+    fn save_game(&self, owner: Node, save_name: GodotString) {
+        let save_name = save_name.to_string();
+        let data_dir = if let Some(dir) = Self::get_data_dir() {
+            dir
+        } else {
+            return;
+        };
+        if !data_dir.exists() {
+            fs::create_dir_all(&data_dir);
+        }
+        if let Ok(mut save_file) = File::create(data_dir.join(&save_name)) {
+            save_file.write(self.game_save.as_bytes());
+        }
+    }
+    // delete a saved game
+    #[export]
+    fn delete_save(&self, owner: Node, save_name: GodotString) {
+        let save_name = save_name.to_string();
+        let save_path = if let Some(dir) = Self::get_data_dir() {
+            dir.join(save_name)
+        } else {
+            return;
+        };
+        fs::remove_file(save_path);
+    }
+    // check if a file exists so godot knows whether or not to
+    // prompt the user to overwrite
+    #[export]
+    fn save_file_exists(&self, owner: Node, save_name: GodotString) -> bool {
+        let save_name = save_name.to_string();
+        let save_dir = if let Some(dir) = Self::get_data_dir() {
+            dir
+        } else {
+            return false;
+        };
+        if save_dir.exists() && save_dir.join(save_name).exists() {
+            return true;
+        }
+        false
+    }
+    // load the contents of a file into the game_save field
+    #[export]
+    unsafe fn load_game(&mut self, mut owner: Node, save_name: GodotString) {
+        let save_name = save_name.to_string();
+        let save_path = if let Some(dir) = Self::get_data_dir() {
+            dir.join(save_name)
+        } else {
+            return;
+        };
+        let save_file = File::open(save_path);
+        match save_file {
+            Err(e) => {
+                owner.emit_signal(
+                    GodotString::from_str("error"),
+                    &[Variant::from_str(&e.to_string())]);
+            },
+            Ok(mut file) => {
+                let mut save_contents = String::new();
+                file.read_to_string(&mut save_contents);
+                self.game_save = save_contents;
+            },
+        }
+    }
+    // send godot the names of the avaiable saved games
+    #[export]
+    fn get_save_names(&self, owner: Node) -> StringArray {
+        let mut names = StringArray::new();
+        let save_dir = if let Some(dir) = Self::get_data_dir() {
+            dir
+        } else {
+            return names;
+        };
+        if let Ok(entries) = save_dir.read_dir() {
+            for entry in entries {
+                let entry = entry.unwrap();
+                if let Some(name) = entry.file_name().to_str() {
+                    names.push(&GodotString::from_str(name));
+                }
+            }
+        }
+        names
+    }
+    // return how many turns the loaded game has
+    #[export]
+    fn get_num_turns(&self, owner: Node) -> usize {
+        self.game_save.lines().collect::<Vec<&str>>().len()/17
+    }
+    // get the path to where saves are stored (platform dependant)
+    fn get_data_dir() -> Option<PathBuf> {
+        if let Some(dir) = dirs::data_dir() {
+            Some(dir.join("dexter_chess_saves/"))
+        } else {
+            None
+        }
+    }
+    // return the path to the data dir as a string so godot can display it
+    #[export]
+    fn data_dir_string(&self, owner: Node) -> GodotString {
+        GodotString::from_str(Self::get_data_dir().unwrap().to_str().unwrap())
+    }
+    // load a specific turn from the game
+    #[export]
+    unsafe fn load_turn(&mut self, mut owner: Node, turn: usize) {
+        // plus 1 since the current move will be AFTER the turn that
+        // gets loaded
+        self.turn_num =  turn+1;
+        let mut piece_controller = owner
+            .get_parent()
+            .unwrap()
+            .get_node(NodePath::from_str("Pieces"))
+            .unwrap();
+        // wrapper over godot method to make new pieces
+        let mut godot_instance_piece = |is_white: bool, piece_type: &str, pos: [usize; 2]| {
+            piece_controller.call(
+                GodotString::from_str("instance_piece"),
+                &[Variant::from_bool(is_white), 
+                Variant::from_str(piece_type), 
+                Variant::from_vector2(&Vector2::new(pos[0] as f32, pos[1] as f32))]);
+        };
+        let mut save_vec: Vec<&str> = self.game_save.lines().collect(); 
+        let start_index = 17*turn;
+        // send previous log entries
+        for log_entry in 0..=turn {
+            owner.emit_signal(
+                GodotString::from_str("log_update"),
+                &[Variant::from_str(&format!("{}\n", save_vec[log_entry*17+8]))]);
+        }
+        let this_turn: Vec<&str> = save_vec.drain(start_index..(start_index+17)).collect();
+        // update the score
+        // read into the rust code's fields
+        self.score[0] = this_turn[0]
+            .trim()
+            .split(" ")
+            .last()
+            .unwrap()
+            .parse::<u8>()
+            .unwrap();
+        self.score[1] = this_turn[2]
+            .trim()
+            .split(" ")
+            .last()
+            .unwrap()
+            .parse::<u8>()
+            .unwrap();
+        self.white_captured = String::from(this_turn[1]);
+        self.black_captured = String::from(this_turn[3]);
+        // read into godot
+        let score = format!("{}\n{}\n{}\n{}\n", 
+                            this_turn[0], this_turn[1], this_turn[2], this_turn[3]);
+        owner.emit_signal(
+            GodotString::from_str("score_update"),
+            &[Variant::from_str(&score)]);
+        // set the player
+        if turn%2 == 0 {
+            self.player = false;
+        } else {
+            self.player = true;
+        }
+        // set white player's castle directions
+        match this_turn[4] {
+            "l" | "b" => self.white_can_castle_left = true,
+            "r" | "b" => self.white_can_castle_right = true,
+            _ => {},
+        }
+        // set black player's castle directions
+        match this_turn[5] {
+            "l" | "b" => self.black_can_castle_left = true,
+            "r" | "b" => self.black_can_castle_right = true,
+            _ => {},
+        }
+        // white en passant
+        if let Ok(col) = this_turn[6].parse() {
+            self.white_en_passant = Some([col, 2]);
+        } else {
+            self.white_en_passant = None;
+        }
+        // black en passant
+        if let Ok(col) = this_turn[7].parse() {
+            self.black_en_passant = Some([col, 5]);
+        } else {
+            self.black_en_passant = None;
+        }
+        // load the board
+        for row in 0..8 {
+            let chars = this_turn[9+row].chars();
+            for (col, char) in chars.enumerate() {
+                let piece: Option<Rc<dyn ChessPiece>> = match char {
+                    '♙' => {
+                        godot_instance_piece(true, "pawn", [col, row]);
+                        Some(Rc::new(Pawn::new(true)))
+                    },
+                    '♘' => {
+                        godot_instance_piece(true, "knight", [col, row]);
+                        Some(Rc::new(Knight::new(true)))
+                    },
+                    '♗' => {
+                        godot_instance_piece(true, "bishop", [col, row]);
+                        Some(Rc::new(Bishop::new(true)))
+                    },
+                    '♖' => {
+                        godot_instance_piece(true, "rook", [col, row]);
+                        Some(Rc::new(Rook::new(true)))
+                    },
+                    '♕' => {
+                        godot_instance_piece(true, "queen", [col, row]);
+                        Some(Rc::new(Queen::new(true)))
+                    },
+                    '♔' => {
+                        godot_instance_piece(true, "king", [col, row]);
+                        Some(Rc::new(King::new(true)))
+                    },
+                    '♟' => {
+                        godot_instance_piece(false, "pawn", [col, row]);
+                        Some(Rc::new(Pawn::new(false)))
+                    },
+                    '♞' => {
+                        godot_instance_piece(false, "knight", [col, row]);
+                        Some(Rc::new(Knight::new(false)))
+                    },
+                    '♝' => {
+                        godot_instance_piece(false, "bishop", [col, row]);
+                        Some(Rc::new(Bishop::new(false)))
+                    },
+                    '♜' => {
+                        godot_instance_piece(false, "rook", [col, row]);
+                        Some(Rc::new(Rook::new(false)))
+                    },
+                    '♛' => {
+                        godot_instance_piece(false, "queen", [col, row]);
+                        Some(Rc::new(Queen::new(false)))
+                    },
+                    '♚' => {
+                        godot_instance_piece(false, "king", [col, row]);
+                        Some(Rc::new(King::new(false)))
+                    },
+                    _ => None,
+                };
+                self.board[col][row] = piece;
+            }
+        }
+        let move_line = this_turn[8].trim();
+        // make the game end popup show up in godot
+        if move_line.contains("checkmate") {
+            let winner = if self.player {
+                -1
+            } else {
+                1
+            };
+            owner.emit_signal(
+                GodotString::from_str("game_over"),
+                &[Variant::from_i64(winner)]);
+        } else if move_line.contains("stalemate") {
+        } else if move_line.contains("draw") {
+        }
     }
     unsafe fn _init(owner: Node) -> Self {
         Self::new()
@@ -338,6 +702,8 @@ impl ChessBoard {
             black_can_castle_right: true,
             white_king_pos: [4, 0],
             black_king_pos: [4, 7],
+            game_save: String::new(),
+            turn_num: 0,
         }
     }
     // test a move and see (regarless of actual legality) if it will put
@@ -415,7 +781,7 @@ impl ChessBoard {
         false
     }
     // capture a piece (remove it from board and increment score)
-    pub unsafe fn capture(&mut self, mut owner: Node, space: [usize; 2]) {
+    pub unsafe fn capture(&mut self, mut owner: Node, space: [usize; 2]) -> String {
         if let Some(piece) = &self.board[space[0]][space[1]] {
             if piece.is_white() {
                 self.score[1] += piece.get_points();
@@ -427,14 +793,17 @@ impl ChessBoard {
             owner.emit_signal(
                 GodotString::from_str("piece_captured"),
                 &[Variant::from_vector2(&Vector2::new(space[0] as f32, space[1] as f32))]);
+            let capture_string = format!(" captures {}", piece);
             owner.emit_signal(
                 GodotString::from_str("log_update"),
-                &[Variant::from_str(&format!(" captures {}", piece))]);
+                &[Variant::from_str(&capture_string)]);
             self.board[space[0]][space[1]] = None;
             owner.emit_signal(
                 GodotString::from_str("score_update"),
                 &[Variant::from_str(self.get_score())]);
+            return capture_string;
         }
+        String::new()
     }
     // check if a square is threatened
     pub fn is_threatened(&mut self, space: [usize; 2], is_white: bool) -> bool {
@@ -544,11 +913,21 @@ impl ChessBoard {
             },
             _ => {},
         }
+        let promote_string = format!(" promoted to {}",
+                                     self.board[dest[0]][dest[1]].as_ref().unwrap());
         owner.emit_signal(
             GodotString::from_str("log_update"),
-            &[Variant::from_str(&format!(" promoted to {}\n", self.board[dest[0]][dest[1]].as_ref().unwrap()))]);
+            &[Variant::from_str(&promote_string)]);
+        self.game_save.push_str(&promote_string);
+        self.test_checkmate_stalemate(owner);
+        owner.emit_signal(
+            GodotString::from_str("log_update"),
+            &[Variant::from_str("\n")]);
+        self.game_save.push_str("\n");
+        self.game_save.push_str(&format!("{}", self));
     }
-    // read input
+    // read input not used anymore, but I don't want to go modify my game trait
+    // so it's still here
     pub fn parse_input(&mut self) -> Option<([usize; 2], [usize; 2])> {
         let mut input_string = String::new();
         self.input.read_line(&mut input_string)
@@ -580,7 +959,9 @@ impl ChessBoard {
             [start[0] as usize, start[1] as usize],
             [dest[0] as usize, dest[1] as usize]))
     }
-    // make a new board
+    // make a new board. I could have repurposed my file loading method here, but I want
+    // to have the default board hardcoded so that users can't delete the default board
+    // save and break the game.
     fn new_board() -> Vec<Vec<Option<Rc<dyn ChessPiece>>>> {
         let mut board: Vec<Vec<Option<Rc<dyn ChessPiece>>>> = vec![vec![None; 8]; 8];
         for col in 0..8 {
